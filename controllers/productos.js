@@ -1,5 +1,6 @@
 const { response } = require("express");
 const Producto = require("../models/producto");
+const Categoria = require("../models/categoria");
 
 // obtenerProductos - paginado - total - populate
 const obtenerProductos = async (req = request, res = response) => {
@@ -52,7 +53,9 @@ const crearProducto = async (req, res = response) => {
         });
     }
 
-    const producto = new Producto({ nombre: nombre.toLowerCase(), descripcion, precio, stock, img, categoria, usuario: req.usuario._id });
+    const { _id } = await Categoria.findOne({ nombre: categoria.toLowerCase() });
+
+    const producto = new Producto({ nombre: nombre.toLowerCase(), descripcion, precio, stock, img, categoria: _id, usuario: req.usuario._id });
 
     // Guardar en la base de datos
     await producto.save();

@@ -11,7 +11,7 @@ const emailExiste = async (correo = '') => {
 }
 
 const categoriaExiste = async (categoria = '') => {
-    const existeCategoria = await Categoria.findOne({ categoria: categoria.toLowerCase() });
+    const existeCategoria = await Categoria.findOne({ nombre: categoria.toLowerCase() });
     if (!existeCategoria) {
         throw new Error(`La categoria ${categoria} no existe`)
     }
