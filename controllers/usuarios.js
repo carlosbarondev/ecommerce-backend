@@ -33,7 +33,7 @@ const usuariosPost = async (req = request, res = response) => {
     // Guardar en la base de datos
     await usuario.save();
 
-    res.json(usuario);
+    res.status(201).json(usuario);
 }
 
 const usuariosPut = async (req = request, res = response) => {

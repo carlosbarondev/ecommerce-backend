@@ -42,9 +42,9 @@ const obtenerProducto = async (req = request, res = response) => {
 
 const crearProducto = async (req, res = response) => {
 
-    const { estado, usuario, ...body } = req.body;
+    const { nombre, descripcion, precio, stock, img, categoria } = req.body;
 
-    const productoDB = await Producto.findOne({ nombre: body.nombre });
+    const productoDB = await Producto.findOne({ nombre: nombre.toLowerCase() });
 
     if (productoDB) {
         return res.status(400).json({
@@ -52,16 +52,9 @@ const crearProducto = async (req, res = response) => {
         });
     }
 
-    // Generar la data a guardar, excluyo que desde el front end me manden el estado por ejemplo
-    const data = {
-        ...body,
-        nombre: body.nombre.toUpperCase(),
-        usuario: req.usuario._id, // Viene por referencia del JWT
-    }
+    const producto = new Producto({ nombre: nombre.toLowerCase(), descripcion, precio, stock, img, categoria, usuario: req.usuario._id });
 
-    const producto = new Producto(data);
-
-    // Guardar DB
+    // Guardar en la base de datos
     await producto.save();
 
     res.status(201).json(producto);
@@ -72,15 +65,9 @@ const crearProducto = async (req, res = response) => {
 const actualizarProducto = async (req = request, res = response) => {
 
     const { id } = req.params;
-    const { estado, usuario, ...data } = req.body;
+    const { nombre, descripcion, precio, stock, img, categoria } = req.body;
 
-    if (data.nombre) {
-        data.nombre = data.nombre.toUpperCase();
-    }
-
-    data.usuario = req.usuario._id;
-
-    const producto = await Producto.findByIdAndUpdate(id, data, { new: true }); // new devuelve la respuesta actualizada
+    const producto = await Producto.findByIdAndUpdate(id, { nombre: nombre.toLowerCase(), descripcion, precio, stock, img, categoria, usuario: req.usuario._id }, { new: true }); // new devuelve la respuesta actualizada
 
     res.json(producto);
 }
@@ -91,14 +78,12 @@ const borrarProducto = async (req = request, res = response) => {
     const { id } = req.params;
 
     // Borrado fisico
-    // const usuario = await Usuario.findByIdAndDelete(id);
+    // const producto = await Producto.findByIdAndDelete(id);
 
     const productoBorrado = await Producto.findByIdAndUpdate(id, { estado: false }, { new: true });
-    const usuarioAutenticado = req.usuario; // Viene de validar-jwt.js por referencia
 
     res.json({
-        productoBorrado,
-        usuarioAutenticado
+        productoBorrado
     });
 }
 
