@@ -18,7 +18,7 @@ const categoriaExiste = async (categoria = '') => {
 }
 
 const productoExiste = async (producto = '') => {
-    const existeProducto = await Producto.findOne({ producto: producto.toLowerCase() });
+    const existeProducto = await Producto.findOne({ nombre: producto.toLowerCase() });
     if (existeProducto) {
         throw new Error(`El producto ${producto} ya está registrado`)
     }
