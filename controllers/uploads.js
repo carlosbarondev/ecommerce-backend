@@ -1,5 +1,4 @@
 const path = require('path');
-const fs = require('fs');
 const { response } = require("express");
 
 const cloudinary = require('cloudinary').v2
@@ -52,22 +51,37 @@ const actualizarImagenCloudinary = async (req, res = response) => {
     let modelo;
 
     switch (coleccion) {
+
         case 'usuarios':
+
             modelo = await Usuario.findById(id);
             if (!modelo) {
                 return res.status(400).json({
                     msg: `No existe un usuario con el id ${id}`
                 });
             }
+
+            //Validar el usuario a modificar respecto el usuario que viene en el JWT
+            if (id !== req.uid) {
+                return res.status(401).json({
+                    ok: false,
+                    msg: 'No tiene privilegios para editar este usuario'
+                });
+            }
+
             break;
+
         case 'productos':
+
             modelo = await Producto.findById(id);
             if (!modelo) {
                 return res.status(400).json({
                     msg: `No existe un producto con el id ${id}`
                 });
             }
+
             break;
+
         default:
             return res.status(500).json({ msg: 'Se me olvidó validar esto' });
     }
