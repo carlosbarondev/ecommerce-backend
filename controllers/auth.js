@@ -17,14 +17,14 @@ const login = async (req = request, res = response) => {
         // Verificar si el email existe
         if (!usuario) {
             return res.status(400).json({
-                msg: 'Usuario / Password no son correctos - correo no existe'
+                msg: 'El correo no está registrado'
             });
         }
 
         // Verificar si el usuario no está activo
         if (!usuario.estado) {
             return res.status(400).json({
-                msg: 'Usuario / Password no son correctos - estado: false'
+                msg: 'El usuario ha sido eliminado'
             });
         }
 
@@ -32,7 +32,7 @@ const login = async (req = request, res = response) => {
         const validPassword = bcryptjs.compareSync(password, usuario.password);
         if (!validPassword) {
             return res.status(400).json({
-                msg: 'Usuario / Password no son correctos - password incorrecto'
+                msg: 'La contraseña no es correcta'
             });
         }
 
