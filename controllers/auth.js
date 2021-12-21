@@ -37,7 +37,7 @@ const login = async (req = request, res = response) => {
         }
 
         // Generar JWT
-        const token = await generarJWT(usuario.id);
+        const token = await generarJWT(usuario.id, usuario.nombre);
 
         res.json({
             usuario,
@@ -50,6 +50,22 @@ const login = async (req = request, res = response) => {
             msg: 'Hable con el administrador'
         })
     }
+}
+
+const revalidarToken = async (req, res = response) => {
+
+    const { uid, nombre } = req;
+
+    // Generar JWT
+    const token = await generarJWT(uid, nombre);
+
+    res.json({
+        ok: true,
+        uid,
+        nombre,
+        token
+    });
+
 }
 
 /*
@@ -103,5 +119,6 @@ const googleSignIn = async (req, res = response) => {
 
 module.exports = {
     login,
+    revalidarToken,
     // googleSignIn
 }
