@@ -7,7 +7,9 @@ const { emailExiste, existeUsuarioPorId } = require('../middlewares/validar-db')
 
 const {
     usuariosGet,
+    usuariosDireccionGet,
     usuariosPost,
+    usuariosDireccionPost,
     usuariosPut,
     // usuariosPatch,
     usuariosDelete
@@ -17,6 +19,8 @@ const router = Router();
 
 router.get('/', usuariosGet);
 
+router.get('/direccion/:id', usuariosDireccionGet);
+
 router.post('/', [
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
     check('password', 'La contraseña debe tener al menos 6 caracteres').isLength({ min: 6 }),
@@ -24,6 +28,20 @@ router.post('/', [
     check('correo').custom(emailExiste),
     validarCampos
 ], usuariosPost);
+
+router.post('/direccion/:id', [
+    validarJWT,
+    check('id', 'El id no es valido').isMongoId(),
+    check('id').custom(existeUsuarioPorId),
+    check('nombre', 'El nombre es obligatorio').not().isEmpty(),
+    check('telefono', 'El telefono es obligatorio').not().isEmpty(),
+    check('direccion', 'La direccion es obligatoria').not().isEmpty(),
+    check('poblacion', 'La poblacion es obligatoria').not().isEmpty(),
+    check('codigo', 'El codigo es obligatorio').not().isEmpty(),
+    check('telefono', 'El telefono no es válido').isNumeric(),
+    check('codigo', 'El codigo no es válido').isNumeric(),
+    validarCampos
+], usuariosDireccionPost);
 
 router.put('/:id', [
     validarJWT,

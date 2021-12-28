@@ -3,6 +3,7 @@ const bcryptjs = require('bcryptjs');
 
 const Usuario = require('../models/usuario');
 
+
 const usuariosGet = async (req = request, res = response) => {
 
     const { limite = 5, desde = 0 } = req.query;
@@ -21,6 +22,15 @@ const usuariosGet = async (req = request, res = response) => {
     });
 }
 
+const usuariosDireccionGet = async (req = request, res = response) => {
+
+    const query = { _id: req.params.id, estado: true }
+
+    const direccion = await Usuario.findById(query, "direccion");
+
+    res.send(direccion);
+}
+
 const usuariosPost = async (req = request, res = response) => {
 
     const { nombre, correo, password } = req.body;
@@ -34,6 +44,26 @@ const usuariosPost = async (req = request, res = response) => {
     await usuario.save();
 
     res.status(201).json(usuario);
+}
+
+const usuariosDireccionPost = async (req = request, res = response) => {
+
+    const { id } = req.params;
+    const { nombre, telefono, direccion, poblacion, codigo } = req.body;
+    const savedireccion = { nombre, telefono, direccion, poblacion, codigo }
+
+    //Validar el usuario a modificar respecto el usuario que viene en el JWT
+    if (id !== req.uid) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'No tiene privilegios para editar este usuario'
+        });
+    }
+
+    // Actualizar la base de datos
+    const usuario = await Usuario.findByIdAndUpdate(id, { $push: { "direccion": savedireccion } }, { new: true });
+
+    res.json(usuario);
 }
 
 const usuariosPut = async (req = request, res = response) => {
@@ -89,7 +119,9 @@ const usuariosDelete = async (req = request, res = response) => {
 
 module.exports = {
     usuariosGet,
+    usuariosDireccionGet,
     usuariosPost,
+    usuariosDireccionPost,
     usuariosPut,
     // usuariosPatch,
     usuariosDelete,
