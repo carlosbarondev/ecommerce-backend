@@ -7,19 +7,20 @@ const { emailExiste, existeUsuarioPorId } = require('../middlewares/validar-db')
 
 const {
     usuariosGet,
-    usuariosDireccionGet,
+    usuariosEnvioGet,
     usuariosPost,
     usuariosDireccionPost,
+    usuariosEnvioPost,
     usuariosPut,
     // usuariosPatch,
-    usuariosDelete
+    usuariosDelete,
 } = require('../controllers/usuarios');
 
 const router = Router();
 
 router.get('/', usuariosGet);
 
-router.get('/direccion/:id', usuariosDireccionGet);
+router.get('/envio/:id', usuariosEnvioGet);
 
 router.post('/', [
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
@@ -29,19 +30,55 @@ router.post('/', [
     validarCampos
 ], usuariosPost);
 
-router.post('/direccion/:id', [
+router.post('/direccion', [
     validarJWT,
     check('id', 'El id no es valido').isMongoId(),
     check('id').custom(existeUsuarioPorId),
-    check('nombre', 'El nombre es obligatorio').not().isEmpty(),
+    check('direccion.poblacion', 'La poblacion es obligatoria').not().isEmpty(),
+    check('direccion.poblacion', 'La poblacion debe ser un string').isString(),
+    check('direccion.pais', 'El pais es obligatorio').not().isEmpty(),
+    check('direccion.pais', 'El pais debe ser un string').isString(),
+    check('direccion.pais', 'El pais debe tener dos letras').isLength(2),
+    check('direccion.calle', 'La calle es obligatoria').not().isEmpty(),
+    check('direccion.calle', 'La calle debe ser un string').isString(),
+    check('direccion.numero', 'El numero es obligatorio').not().isEmpty(),
+    check('direccion.numero', 'El numero debe ser un string').isString(),
+    check('direccion.codigo', 'El codigo es obligatorio').not().isEmpty(),
+    check('direccion.codigo', 'El codigo debe ser un numero').isNumeric(),
+    check('direccion.codigo', 'El codigo debe tener cinco numeros').isLength(5),
+    check('direccion.provincia', 'La provincia es obligatoria').not().isEmpty(),
+    check('direccion.provincia', 'La provincia debe ser un string').isString(),
     check('telefono', 'El telefono es obligatorio').not().isEmpty(),
-    check('direccion', 'La direccion es obligatoria').not().isEmpty(),
-    check('poblacion', 'La poblacion es obligatoria').not().isEmpty(),
-    check('codigo', 'El codigo es obligatorio').not().isEmpty(),
-    check('telefono', 'El telefono no es válido').isNumeric(),
-    check('codigo', 'El codigo no es válido').isNumeric(),
+    check('telefono', 'El teléfono debe ser un número').isNumeric(),
+    check('telefono', 'El teléfono debe tener nueve numeros').isLength(9),
     validarCampos
 ], usuariosDireccionPost);
+
+router.post('/envio/:id', [
+    validarJWT,
+    check('id', 'El id no es valido').isMongoId(),
+    check('id').custom(existeUsuarioPorId),
+    check('direccion.poblacion', 'La poblacion es obligatoria').not().isEmpty(),
+    check('direccion.poblacion', 'La poblacion debe ser un string').isString(),
+    check('direccion.pais', 'El pais es obligatorio').not().isEmpty(),
+    check('direccion.pais', 'El pais debe ser un string').isString(),
+    check('direccion.pais', 'El pais debe tener dos letras').isLength(2),
+    check('direccion.calle', 'La calle es obligatoria').not().isEmpty(),
+    check('direccion.calle', 'La calle debe ser un string').isString(),
+    check('direccion.numero', 'El numero es obligatorio').not().isEmpty(),
+    check('direccion.numero', 'El numero debe ser un string').isString(),
+    check('direccion.codigo', 'El codigo es obligatorio').not().isEmpty(),
+    check('direccion.codigo', 'El codigo debe ser un numero').isNumeric(),
+    check('direccion.codigo', 'El codigo debe tener cinco numeros').isLength(5),
+    check('direccion.provincia', 'La provincia es obligatoria').not().isEmpty(),
+    check('direccion.provincia', 'La provincia debe ser un string').isString(),
+    check('nombre', 'El nombre es obligatorio').not().isEmpty(),
+    check('nombre', 'El nombre debe ser un string').isString(),
+    check('telefono', 'El telefono es obligatorio').not().isEmpty(),
+    check('telefono', 'El teléfono debe ser un número').isNumeric(),
+    check('telefono', 'El teléfono debe tener nueve numeros').isLength(9),
+    validarCampos
+], usuariosEnvioPost);
 
 router.put('/:id', [
     validarJWT,

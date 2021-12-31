@@ -2,6 +2,7 @@ const { request, response } = require('express');
 const bcryptjs = require('bcryptjs');
 
 const Usuario = require('../models/usuario');
+const { generarJWT } = require('../helpers/generar-jwt');
 
 
 const usuariosGet = async (req = request, res = response) => {
@@ -22,13 +23,13 @@ const usuariosGet = async (req = request, res = response) => {
     });
 }
 
-const usuariosDireccionGet = async (req = request, res = response) => {
+const usuariosEnvioGet = async (req = request, res = response) => {
 
     const query = { _id: req.params.id, estado: true }
 
-    const direccion = await Usuario.findById(query, "direccion");
+    const envio = await Usuario.findById(query, "envio");
 
-    res.send(direccion);
+    res.send(envio);
 }
 
 const usuariosPost = async (req = request, res = response) => {
@@ -43,14 +44,19 @@ const usuariosPost = async (req = request, res = response) => {
     // Guardar en la base de datos
     await usuario.save();
 
-    res.status(201).json(usuario);
+    // Generar JWT
+    const token = await generarJWT(usuario.id, usuario.nombre);
+
+    res.status(201).json({
+        usuario,
+        token
+    });
+
 }
 
 const usuariosDireccionPost = async (req = request, res = response) => {
 
-    const { id } = req.params;
-    const { nombre, telefono, direccion, poblacion, codigo } = req.body;
-    const savedireccion = { nombre, telefono, direccion, poblacion, codigo }
+    const { id, direccion, telefono } = req.body;
 
     //Validar el usuario a modificar respecto el usuario que viene en el JWT
     if (id !== req.uid) {
@@ -61,9 +67,31 @@ const usuariosDireccionPost = async (req = request, res = response) => {
     }
 
     // Actualizar la base de datos
-    const usuario = await Usuario.findByIdAndUpdate(id, { $push: { "direccion": savedireccion } }, { new: true });
+    const usuario = await Usuario.findByIdAndUpdate(id, { "direccion": direccion, "telefono": telefono }, { new: true });
 
     res.json(usuario);
+
+}
+
+const usuariosEnvioPost = async (req = request, res = response) => {
+
+    const { id } = req.params;
+    const { direccion, nombre, telefono } = req.body;
+    const saveEnvio = { direccion, nombre, telefono }
+
+    //Validar el usuario a modificar respecto el usuario que viene en el JWT
+    if (id !== req.uid) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'No tiene privilegios para editar este usuario'
+        });
+    }
+
+    // Actualizar la base de datos
+    const usuario = await Usuario.findByIdAndUpdate(id, { $push: { "envio": saveEnvio } }, { new: true });
+
+    res.json(usuario);
+
 }
 
 const usuariosPut = async (req = request, res = response) => {
@@ -119,9 +147,10 @@ const usuariosDelete = async (req = request, res = response) => {
 
 module.exports = {
     usuariosGet,
-    usuariosDireccionGet,
+    usuariosEnvioGet,
     usuariosPost,
     usuariosDireccionPost,
+    usuariosEnvioPost,
     usuariosPut,
     // usuariosPatch,
     usuariosDelete,

@@ -39,7 +39,20 @@ const existeCategoriaPorId = async (id) => {
 }
 
 const existeProductoPorId = async (id) => {
-    const existeProducto = await Producto.findById(id);
+
+    let existeProducto;
+
+    if (Array.isArray(id)) { // Array de productos del pedido
+        for (let i = 0; i < id.length; i++) {
+            existeProducto = await Producto.findById(id[i]);
+            if (!existeProducto) {
+                break;
+            }
+        }
+    } else {
+        existeProducto = await Producto.findById(id);
+    }
+
     if (!existeProducto) {
         throw new Error(`El id ${id} no existe`)
     }

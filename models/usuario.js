@@ -2,6 +2,34 @@ const { Schema, model } = require('mongoose');
 
 
 const direccion = Schema({
+    poblacion: {
+        type: String,
+        required: [true, 'La poblacion es obligatoria']
+    },
+    pais: {
+        type: String,
+        required: [true, 'El pais es obligatorio']
+    },
+    calle: {
+        type: String,
+        required: [true, 'La direccion1 es obligatoria']
+    },
+    numero: {
+        type: String,
+        required: [true, 'La direccion2 es obligatoria']
+    },
+    codigo: {
+        type: Number,
+        required: [true, 'El codigo postal es obligatorio']
+    },
+    provincia: {
+        type: String,
+        required: [true, 'La provincia es obligatoria']
+    },
+});
+
+const envio = Schema({
+    direccion: direccion,
     nombre: {
         type: String,
         required: [true, 'El nombre es obligatorio']
@@ -10,30 +38,23 @@ const direccion = Schema({
         type: Number,
         required: [true, 'El telefono es obligatorio']
     },
-    direccion: {
-        type: String,
-        required: [true, 'La direccion es obligatoria']
-    },
-    poblacion: {
-        type: String,
-        required: [true, 'La poblacion es obligatoria']
-    },
-    codigo: {
-        type: Number,
-        required: [true, 'El codigo postal es obligatorio']
-    },
 });
 
 const UsuarioSchema = Schema({
-    nombre: {
-        type: String,
-        required: [true, 'El nombre es obligatorio']
-    },
+    direccion: direccion, // Dirección de facturación
     correo: {
         type: String,
         required: [true, 'El correo es obligatorio'],
         unique: true
     },
+    nombre: {
+        type: String,
+        required: [true, 'El nombre es obligatorio']
+    },
+    telefono: {
+        type: Number,
+    },
+    envio: [envio], // Dirección de los envios
     password: {
         type: String,
         required: [true, 'La contraseña es obligatoria'],
@@ -51,7 +72,6 @@ const UsuarioSchema = Schema({
         type: Boolean,
         default: true
     },
-    direccion: [direccion],
     /*google: {
         type: Boolean,
         default: false
