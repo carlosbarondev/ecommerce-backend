@@ -17,7 +17,7 @@ const validarJWT = async (req = request, res = response, next) => {
 
     try {
 
-        const { uid, nombre } = jwt.verify(token, process.env.SECRETORPRIVATEKEY); // Si falla dispara el catch y no ejecuta el next()
+        const { uid, nombre, correo } = jwt.verify(token, process.env.SECRETORPRIVATEKEY); // Si falla dispara el catch y no ejecuta el next()
 
         // Leer el usuario que corresponde al uid
         const usuario = await Usuario.findById(uid);
@@ -38,6 +38,7 @@ const validarJWT = async (req = request, res = response, next) => {
         req.usuario = usuario; // Graba la propiedad en la request y se la pasa por referencia a los demas validadores(check)¡¡¡¡¡¡¡¡¡¡
         req.uid = uid;
         req.nombre = nombre;
+        req.correo = correo;
 
         next();
 

@@ -43,20 +43,13 @@ const calculateOrderAmount = (items) => {
 const crearPago = async (req, res = response) => {
 
     const { id } = req.params;
-    const { correo, setDireccion, items } = req.body;
-console.log(setDireccion.direccion.poblacion);
+    const { correo, direccion, items } = req.body;
 
-    console.log(correo);
-    console.log(setDireccion);
-    console.log(items);
-    
-    
     // Alternatively, set up a webhook to listen for the payment_intent.succeeded event
     // and attach the PaymentMethod to a new Customer
     let customer;
     try { // Si el cliente ya esta registrado se cargan sus datos
         customer = await stripe.customers.retrieve(id);
-        console.log("antiguo");
     } catch (err) {
         console.log("Error: ", err.message);
     }
@@ -65,22 +58,21 @@ console.log(setDireccion.direccion.poblacion);
         customer = await stripe.customers.create({
             id: id,
             email: correo,
-            name: setDireccion.nombre,
-            phone: setDireccion.telefono,
+            name: direccion.nombre,
+            phone: direccion.telefono,
             shipping: {
                 address: {
-                    city: setDireccion.direccion.poblacion,
-                    country: setDireccion.direccion.pais,
-                    line1: setDireccion.direccion.calle,
-                    line2: setDireccion.direccion.numero,
-                    postal_code: setDireccion.direccion.codigo,
-                    state: setDireccion.direccion.provincia
+                    city: direccion.direccion.poblacion,
+                    country: direccion.direccion.pais,
+                    line1: direccion.direccion.calle,
+                    line2: direccion.direccion.numero,
+                    postal_code: direccion.direccion.codigo,
+                    state: direccion.direccion.provincia
                 },
-                name: setDireccion.nombre,
-                phone: setDireccion.telefono
+                name: direccion.nombre,
+                phone: direccion.telefono
             }
         });
-        console.log("nuevo");
     }
 
     console.log(customer);

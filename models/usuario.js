@@ -41,7 +41,7 @@ const envio = Schema({
 });
 
 const UsuarioSchema = Schema({
-    direccion: direccion, // Dirección de facturación
+    facturacion: direccion, // Dirección de facturación
     correo: {
         type: String,
         required: [true, 'El correo es obligatorio'],
