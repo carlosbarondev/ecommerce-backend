@@ -25,11 +25,36 @@ const usuariosGet = async (req = request, res = response) => {
 
 const usuariosEnvioGet = async (req = request, res = response) => {
 
+    //Validar el usuario a modificar respecto el usuario que viene en el JWT
+    if (req.params.id !== req.uid) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'No tiene privilegios para editar este usuario'
+        });
+    }
+
     const query = { _id: req.params.id, estado: true }
 
     const envio = await Usuario.findById(query, "envio");
 
     res.send(envio);
+}
+
+const usuariosFacturacionGet = async (req = request, res = response) => {
+
+    //Validar el usuario a modificar respecto el usuario que viene en el JWT
+    if (req.params.id !== req.uid) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'No tiene privilegios para editar este usuario'
+        });
+    }
+
+    const query = { _id: req.params.id, estado: true }
+
+    const facturacion = await Usuario.findById(query, "facturacion");
+
+    res.send(facturacion);
 }
 
 const usuariosPost = async (req = request, res = response) => {
@@ -94,6 +119,27 @@ const usuariosEnvioPost = async (req = request, res = response) => {
 
 }
 
+const usuariosFacturacionPost = async (req = request, res = response) => {
+
+    const { id } = req.params;
+    const { poblacion, pais, calle, numero, codigo, provincia } = req.body;
+    const saveFacturacion = { poblacion, pais, calle, numero, codigo, provincia }
+
+    //Validar el usuario a modificar respecto el usuario que viene en el JWT
+    if (id !== req.uid) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'No tiene privilegios para editar este usuario'
+        });
+    }
+
+    // Actualizar la base de datos
+    const usuario = await Usuario.findByIdAndUpdate(id, { "facturacion": saveFacturacion }, { new: true });
+
+    res.json(usuario);
+
+}
+
 const usuariosPut = async (req = request, res = response) => {
 
     const { id } = req.params;
@@ -148,8 +194,10 @@ const usuariosDelete = async (req = request, res = response) => {
 module.exports = {
     usuariosGet,
     usuariosEnvioGet,
+    usuariosFacturacionGet,
     usuariosPost,
     usuariosDireccionPost,
+    usuariosFacturacionPost,
     usuariosEnvioPost,
     usuariosPut,
     // usuariosPatch,

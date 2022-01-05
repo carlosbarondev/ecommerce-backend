@@ -28,7 +28,7 @@ const obtenerProducto = async (req = request, res = response) => {
 
     const query = { _id: req.params.id, estado: true }
 
-    const producto = await Producto.find(query).populate("usuario", "nombre").populate("categoria", "nombre");
+    const producto = await Producto.findOne(query).populate("usuario", "nombre").populate("categoria", "nombre");
 
     if (producto.length === 0) {
         return res.status(400).json({

@@ -9,7 +9,7 @@ const calculateOrderAmount = (items) => {
     // Replace this constant with a calculation of the order's amount
     // Calculate the order total on the server to prevent
     // people from directly manipulating the amount on the client
-    return 1400;
+    return items.reduce((n, { unidades, producto }) => n + unidades * producto.precio, 0).toFixed(2) * 100;
 
 };
 
@@ -57,6 +57,33 @@ const crearPago = async (req, res = response) => {
     if (!customer) { // Si el cliente no esta registrado se crea
         customer = await stripe.customers.create({
             id: id,
+            address: direccion.facturacion,
+            email: correo,
+            name: direccion.nombre,
+            phone: direccion.telefono,
+            shipping: {
+                address: {
+                    city: direccion.direccion.poblacion,
+                    country: direccion.direccion.pais,
+                    line1: direccion.direccion.calle,
+                    line2: direccion.direccion.numero,
+                    postal_code: direccion.direccion.codigo,
+                    state: direccion.direccion.provincia
+                },
+                name: direccion.nombre,
+                phone: direccion.telefono
+            }
+        });
+    } else {
+        customer = await stripe.customers.update(id, {
+            address: {
+                city: direccion.facturacion.poblacion,
+                country: direccion.facturacion.pais,
+                line1: direccion.facturacion.calle,
+                line2: direccion.facturacion.numero,
+                postal_code: direccion.facturacion.codigo,
+                state: direccion.facturacion.provincia
+            },
             email: correo,
             name: direccion.nombre,
             phone: direccion.telefono,
@@ -75,8 +102,6 @@ const crearPago = async (req, res = response) => {
         });
     }
 
-    console.log(customer);
-
     // Create a PaymentIntent with the order amount and currency
     const paymentIntent = await stripe.paymentIntents.create({
         customer: customer.id,
@@ -87,8 +112,6 @@ const crearPago = async (req, res = response) => {
             enabled: true,
         },
     });
-
-    console.log(paymentIntent);
 
     res.send({
         clientSecret: paymentIntent.client_secret,
