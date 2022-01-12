@@ -3,7 +3,7 @@ const { check, body } = require('express-validator');
 
 const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
-const { existeProductoPorId, productoExiste, existeUsuarioPorId } = require('../middlewares/validar-db');
+const { existeProductoPorId, productoExiste, existeUsuarioPorId, existeFacturacionPorId } = require('../middlewares/validar-db');
 
 const {
     //obtenerProductos,
@@ -30,11 +30,16 @@ router.post('/', [
     validarJWT,
     body('usuario', 'El usuario no es valido').isMongoId(),
     body('usuario').custom(existeUsuarioPorId),
-    body('producto', 'El producto no es valido').isMongoId(),
-    body('producto').custom(existeProductoPorId),
+    //body('producto', 'El producto no es valido').isMongoId(),
+    //body('producto').custom(existeProductoPorId),
     check('fecha', 'La fecha es obligatoria').not().isEmpty(),
-    check('direccion', 'La direccion es obligatoria').not().isEmpty(),
-    check('pago', 'El metodo de pago es obligatorio').not().isEmpty(),
+    //check('direccionEnvio', 'El id de la dirección de envío no es correcto').isMongoId(),
+    //check('direccionEnvio', 'La direccion de envío es obligatoria').not().isEmpty(),
+    //check('direccionFacturacion', 'La direccion de facturación es obligatoria').not().isEmpty(),
+    //check('direccionFacturacion', 'El id de la dirección de facturaciónno es correcto').isMongoId(),
+    //check('direccionFacturacion').custom(existeFacturacionPorId),
+    check('metodoPago', 'El metodo de pago es obligatorio').not().isEmpty(),
+    check('digitos', 'Ultimos digitos son obligatorios').not().isEmpty(),
     validarCampos
 ], crearPedido);
 

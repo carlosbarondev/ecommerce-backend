@@ -3,14 +3,15 @@ const { check } = require('express-validator');
 
 const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
-const { existeProductoPorId, categoriaExiste, productoExiste } = require('../middlewares/validar-db');
+const { existeProductoPorId, categoriaExiste, productoExiste, existeUsuarioPorId } = require('../middlewares/validar-db');
 
 const {
     obtenerProductos,
     obtenerProducto,
     crearProducto,
     actualizarProducto,
-    borrarProducto
+    borrarProducto,
+    crearComentarioProducto
 } = require('../controllers/productos');
 
 const router = Router();
@@ -52,5 +53,18 @@ router.delete('/:id', [
     check('id').custom(existeProductoPorId),
     validarCampos
 ], borrarProducto);
+
+// Crear producto - privado - cualquier persona con un token válido
+router.post('/:id', [
+    validarJWT,
+    check('id', 'El id no es valido').isMongoId(),
+    check('id').custom(existeProductoPorId),
+    check('titulo', 'El titulo es obligatorio').not().isEmpty(),
+    check('comentario', 'El comentario es obligatorio').not().isEmpty(),
+    check('rating', 'El rating es obligatorio').not().isEmpty(),
+    check('usuario', 'El usuario es obligatorio').not().isEmpty(),
+    check('usuario').custom(existeUsuarioPorId),
+    validarCampos
+], crearComentarioProducto);
 
 module.exports = router;

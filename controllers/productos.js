@@ -90,10 +90,30 @@ const borrarProducto = async (req = request, res = response) => {
     });
 }
 
+const crearComentarioProducto = async (req, res = response) => {
+
+    const { id } = req.params;
+    const { titulo, comentario, rating, usuario } = req.body;
+
+    let producto;
+
+    const existeComentario = await Producto.findOne({ _id: id, "opinion.usuario": usuario });
+
+    if (existeComentario) { // Si el usuario ya tiene un comentario en el producto lo actualiza
+        producto = await Producto.findOneAndUpdate({ _id: id, "opinion.usuario": usuario }, { '$set': { "opinion.$.titulo": titulo, "opinion.$.comentario": comentario, "opinion.$.rating": rating, "opinion.$.usuario": usuario } }, { new: true }); // new devuelve la respuesta actualizada
+    } else { // Si el usuario no tiene un comentario en el producto lo añade
+        producto = await Producto.findByIdAndUpdate(id, { $push: { "opinion": { titulo, comentario, rating, usuario } } }, { new: true }); // new devuelve la respuesta actualizada
+    }
+
+    res.json(producto);
+
+}
+
 module.exports = {
     obtenerProductos,
     obtenerProducto,
     crearProducto,
     actualizarProducto,
-    borrarProducto
+    borrarProducto,
+    crearComentarioProducto
 }

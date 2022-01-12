@@ -42,9 +42,9 @@ const obtenerProducto = async (req = request, res = response) => {
 */
 const crearPedido = async (req, res = response) => {
 
-    const { usuario, producto, fecha, direccion, pago } = req.body;
+    const { idPedido, usuario, producto, fecha, direccionEnvio, direccionFacturacion, metodoPago, digitos, total } = req.body;
 
-    const pedido = new Pedido({ usuario, producto, fecha, direccion, pago });
+    const pedido = new Pedido({ idPedido, usuario, producto, fecha, direccionEnvio, direccionFacturacion, metodoPago, digitos, total });
 
     // Guardar en la base de datos
     await pedido.save();

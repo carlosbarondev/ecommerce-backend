@@ -1,6 +1,7 @@
 const Categoria = require("../models/categoria");
 const Producto = require("../models/producto");
 const Usuario = require("../models/usuario");
+const Direccion = require("../models/usuario");
 
 
 const emailExiste = async (correo = '') => {
@@ -58,6 +59,13 @@ const existeProductoPorId = async (id) => {
     }
 }
 
+const existeFacturacionPorId = async (id) => {
+    const existeFacturacion = await Direccion.findById(id);
+    if (!existeFacturacion) {
+        throw new Error(`El id ${id} no existe`)
+    }
+}
+
 const coleccionesPermitidas = (coleccion = '', colecciones = []) => {
     const incluida = colecciones.includes(coleccion);
     if (!incluida) {
@@ -73,5 +81,6 @@ module.exports = {
     existeUsuarioPorId,
     existeCategoriaPorId,
     existeProductoPorId,
+    existeFacturacionPorId,
     coleccionesPermitidas
 }
