@@ -54,7 +54,11 @@ const ProductoSchema = Schema({
                 type: Schema.Types.ObjectId,
                 ref: 'Usuario',
                 required: [true, 'El usuario es obligatorio']
-            }
+            },
+            fecha: {
+                type: Date,
+                required: [true, 'La fecha es obligatoria'],
+            },
         }
     ],
     estado: {

@@ -28,7 +28,7 @@ const obtenerProducto = async (req = request, res = response) => {
 
     const query = { _id: req.params.id, estado: true }
 
-    const producto = await Producto.findOne(query).populate("usuario", "nombre").populate("categoria", "nombre");
+    const producto = await Producto.findOne(query).populate("usuario", "nombre").populate("categoria", "nombre").populate("opinion.usuario", "nombre");
 
     if (producto.length === 0) {
         return res.status(400).json({
@@ -93,16 +93,16 @@ const borrarProducto = async (req = request, res = response) => {
 const crearComentarioProducto = async (req, res = response) => {
 
     const { id } = req.params;
-    const { titulo, comentario, rating, usuario } = req.body;
+    const { titulo, comentario, rating, usuario, fecha } = req.body;
 
     let producto;
 
     const existeComentario = await Producto.findOne({ _id: id, "opinion.usuario": usuario });
 
     if (existeComentario) { // Si el usuario ya tiene un comentario en el producto lo actualiza
-        producto = await Producto.findOneAndUpdate({ _id: id, "opinion.usuario": usuario }, { '$set': { "opinion.$.titulo": titulo, "opinion.$.comentario": comentario, "opinion.$.rating": rating, "opinion.$.usuario": usuario } }, { new: true }); // new devuelve la respuesta actualizada
+        producto = await Producto.findOneAndUpdate({ _id: id, "opinion.usuario": usuario }, { '$set': { "opinion.$.titulo": titulo, "opinion.$.comentario": comentario, "opinion.$.rating": rating, "opinion.$.usuario": usuario, "opinion.$.fecha": fecha } }, { new: true }); // new devuelve la respuesta actualizada
     } else { // Si el usuario no tiene un comentario en el producto lo añade
-        producto = await Producto.findByIdAndUpdate(id, { $push: { "opinion": { titulo, comentario, rating, usuario } } }, { new: true }); // new devuelve la respuesta actualizada
+        producto = await Producto.findByIdAndUpdate(id, { $push: { "opinion": { titulo, comentario, rating, usuario, fecha } } }, { new: true }); // new devuelve la respuesta actualizada
     }
 
     res.json(producto);

@@ -54,7 +54,7 @@ router.delete('/:id', [
     validarCampos
 ], borrarProducto);
 
-// Crear producto - privado - cualquier persona con un token válido
+// Crear comentario producto - privado - cualquier persona con un token válido
 router.post('/:id', [
     validarJWT,
     check('id', 'El id no es valido').isMongoId(),
@@ -64,6 +64,7 @@ router.post('/:id', [
     check('rating', 'El rating es obligatorio').not().isEmpty(),
     check('usuario', 'El usuario es obligatorio').not().isEmpty(),
     check('usuario').custom(existeUsuarioPorId),
+    check('fecha', 'La fecha es obligatoria').not().isEmpty(),
     validarCampos
 ], crearComentarioProducto);
 
