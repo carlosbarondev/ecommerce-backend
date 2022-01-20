@@ -64,33 +64,18 @@ const crearPago = async (req, res = response) => {
     // Alternatively, set up a webhook to listen for the payment_intent.succeeded event
     // and attach the PaymentMethod to a new Customer
     let customer;
+    //console.log("yes", direccion.direccion.direccion.poblacion);
 
     try { // Si el cliente ya esta registrado se cargan sus datos
 
-        customer = await stripe.customers.retrieve(id);
+        try {
 
-        if (!customer) { // Si el cliente no esta registrado se crea
+            customer = await stripe.customers.retrieve(id);
+
+        } catch { // Si el cliente no esta registrado se crea
+
             customer = await stripe.customers.create({
                 id: id,
-                address: direccion.facturacion,
-                email: correo,
-                name: direccion.nombre,
-                phone: direccion.telefono,
-                shipping: {
-                    address: {
-                        city: direccion.direccion.poblacion,
-                        country: direccion.direccion.pais,
-                        line1: direccion.direccion.calle,
-                        line2: direccion.direccion.numero,
-                        postal_code: direccion.direccion.codigo,
-                        state: direccion.direccion.provincia
-                    },
-                    name: direccion.nombre,
-                    phone: direccion.telefono
-                }
-            });
-        } else { // El cliente existe y se actualiza con los datos del envio
-            customer = await stripe.customers.update(id, {
                 address: {
                     city: direccion.facturacion.poblacion,
                     country: direccion.facturacion.pais,
@@ -100,22 +85,50 @@ const crearPago = async (req, res = response) => {
                     state: direccion.facturacion.provincia
                 },
                 email: correo,
-                name: direccion.nombre,
-                phone: direccion.telefono,
+                name: direccion.direccion.nombre,
+                phone: direccion.direccion.telefono,
                 shipping: {
                     address: {
-                        city: direccion.direccion.poblacion,
-                        country: direccion.direccion.pais,
-                        line1: direccion.direccion.calle,
-                        line2: direccion.direccion.numero,
-                        postal_code: direccion.direccion.codigo,
-                        state: direccion.direccion.provincia
+                        city: direccion.direccion.direccion.poblacion,
+                        country: direccion.direccion.direccion.pais,
+                        line1: direccion.direccion.direccion.calle,
+                        line2: direccion.direccion.direccion.numero,
+                        postal_code: direccion.direccion.direccion.codigo,
+                        state: direccion.direccion.direccion.provincia
                     },
-                    name: direccion.nombre,
-                    phone: direccion.telefono
+                    name: direccion.direccion.nombre,
+                    phone: direccion.direccion.telefono
                 }
             });
+
         }
+
+        // El cliente existe y se actualiza con los datos del envio
+        customer = await stripe.customers.update(id, {
+            address: {
+                city: direccion.facturacion.poblacion,
+                country: direccion.facturacion.pais,
+                line1: direccion.facturacion.calle,
+                line2: direccion.facturacion.numero,
+                postal_code: direccion.facturacion.codigo,
+                state: direccion.facturacion.provincia
+            },
+            email: correo,
+            name: direccion.direccion.nombre,
+            phone: direccion.direccion.telefono,
+            shipping: {
+                address: {
+                    city: direccion.direccion.direccion.poblacion,
+                    country: direccion.direccion.direccion.pais,
+                    line1: direccion.direccion.direccion.calle,
+                    line2: direccion.direccion.direccion.numero,
+                    postal_code: direccion.direccion.direccion.codigo,
+                    state: direccion.direccion.direccion.provincia
+                },
+                name: direccion.direccion.nombre,
+                phone: direccion.direccion.telefono
+            }
+        });
 
         // Create a PaymentIntent with the order amount and currency
         const paymentIntent = await stripe.paymentIntents.create({
@@ -133,7 +146,7 @@ const crearPago = async (req, res = response) => {
         });
 
     } catch (error) {
-        console.log(error);
+        //console.log(error);
         return res.status(500).json({
             msg: error.message
         });

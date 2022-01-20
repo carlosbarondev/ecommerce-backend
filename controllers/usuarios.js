@@ -2,7 +2,6 @@ const { request, response } = require('express');
 const bcryptjs = require('bcryptjs');
 
 const Usuario = require('../models/usuario');
-const { generarJWT } = require('../helpers/generar-jwt');
 
 
 const usuariosGet = async (req = request, res = response) => {
@@ -23,7 +22,9 @@ const usuariosGet = async (req = request, res = response) => {
     });
 }
 
-const usuariosEnvioGet = async (req = request, res = response) => {
+const usuariosGetId = async (req = request, res = response) => {
+
+    const query = { _id: req.params.id, estado: true }
 
     //Validar el usuario a modificar respecto el usuario que viene en el JWT
     if (req.params.id !== req.uid) {
@@ -33,28 +34,11 @@ const usuariosEnvioGet = async (req = request, res = response) => {
         });
     }
 
-    const query = { _id: req.params.id, estado: true }
+    const usuario = await Usuario.findOne(query);
 
-    const envio = await Usuario.findById(query, "envio");
-
-    res.send(envio);
-}
-
-const usuariosFacturacionGet = async (req = request, res = response) => {
-
-    //Validar el usuario a modificar respecto el usuario que viene en el JWT
-    if (req.params.id !== req.uid) {
-        return res.status(401).json({
-            ok: false,
-            msg: 'No tiene privilegios para editar este usuario'
-        });
-    }
-
-    const query = { _id: req.params.id, estado: true }
-
-    const facturacion = await Usuario.findById(query, "facturacion");
-
-    res.send(facturacion);
+    res.json({
+        usuario
+    });
 }
 
 const usuariosPost = async (req = request, res = response) => {
@@ -69,81 +53,16 @@ const usuariosPost = async (req = request, res = response) => {
     // Guardar en la base de datos
     await usuario.save();
 
-    // Generar JWT
-    const token = await generarJWT(usuario.id, usuario.nombre);
-
     res.status(201).json({
-        usuario,
-        token
+        usuario
     });
-
-}
-
-const usuariosDireccionPost = async (req = request, res = response) => {
-
-    const { id, direccion, telefono } = req.body;
-
-    //Validar el usuario a modificar respecto el usuario que viene en el JWT
-    if (id !== req.uid) {
-        return res.status(401).json({
-            ok: false,
-            msg: 'No tiene privilegios para editar este usuario'
-        });
-    }
-
-    // Actualizar la base de datos
-    const usuario = await Usuario.findByIdAndUpdate(id, { "direccion": direccion, "telefono": telefono }, { new: true });
-
-    res.json(usuario);
-
-}
-
-const usuariosEnvioPost = async (req = request, res = response) => {
-
-    const { id } = req.params;
-    const { direccion, nombre, telefono } = req.body;
-    const saveEnvio = { direccion, nombre, telefono }
-
-    //Validar el usuario a modificar respecto el usuario que viene en el JWT
-    if (id !== req.uid) {
-        return res.status(401).json({
-            ok: false,
-            msg: 'No tiene privilegios para editar este usuario'
-        });
-    }
-
-    // Actualizar la base de datos
-    const usuario = await Usuario.findByIdAndUpdate(id, { $push: { "envio": saveEnvio } }, { new: true });
-
-    res.json(usuario);
-
-}
-
-const usuariosFacturacionPost = async (req = request, res = response) => {
-
-    const { id } = req.params;
-    const { poblacion, pais, calle, numero, codigo, provincia } = req.body;
-    const saveFacturacion = { poblacion, pais, calle, numero, codigo, provincia }
-
-    //Validar el usuario a modificar respecto el usuario que viene en el JWT
-    if (id !== req.uid) {
-        return res.status(401).json({
-            ok: false,
-            msg: 'No tiene privilegios para editar este usuario'
-        });
-    }
-
-    // Actualizar la base de datos
-    const usuario = await Usuario.findByIdAndUpdate(id, { "facturacion": saveFacturacion }, { new: true });
-
-    res.json(usuario);
 
 }
 
 const usuariosPut = async (req = request, res = response) => {
 
     const { id } = req.params;
-    const { nombre, correo, password } = req.body;
+    const { nombre, correo, password, predeterminado, envio } = req.body;
 
     //Validar el usuario a modificar respecto el usuario que viene en el JWT
     if (id !== req.uid) {
@@ -154,20 +73,19 @@ const usuariosPut = async (req = request, res = response) => {
     }
 
     // Encriptar la contraseña
-    const salt = bcryptjs.genSaltSync();
-    const newPassword = bcryptjs.hashSync(password, salt);
+    let salt;
+    let newPassword;
+
+    if (password) {
+        salt = bcryptjs.genSaltSync();
+        newPassword = bcryptjs.hashSync(password, salt);
+    }
 
     // Actualizar la base de datos
-    const usuario = await Usuario.findByIdAndUpdate(id, { nombre, correo, password: newPassword }, { new: true });
+    const usuario = await Usuario.findByIdAndUpdate(id, { nombre, correo, password: newPassword, predeterminado, envio }, { new: true });
 
     res.json(usuario);
 }
-
-/*const usuariosPatch = (req = request, res = response) => {
-    res.json({
-        msg: 'patch API - usuariosPatch',
-    });
-}*/
 
 const usuariosDelete = async (req = request, res = response) => {
 
@@ -191,15 +109,170 @@ const usuariosDelete = async (req = request, res = response) => {
     });
 }
 
+/*const usuariosPatch = (req = request, res = response) => {
+    res.json({
+        msg: 'patch API - usuariosPatch',
+    });
+}*/
+
+const usuariosEnvioGet = async (req = request, res = response) => {
+
+    //Validar el usuario a modificar respecto el usuario que viene en el JWT
+    if (req.params.id !== req.uid) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'No tiene privilegios para editar este usuario'
+        });
+    }
+
+    const query = { _id: req.params.id, estado: true }
+
+    const envio = await Usuario.findById(query, "envio");
+
+    res.send(envio);
+}
+
+const usuariosEnvioPost = async (req = request, res = response) => {
+
+    const { id } = req.params;
+    const { direccion, nombre, telefono } = req.body;
+    const saveEnvio = { direccion, nombre, telefono }
+
+    //Validar el usuario a modificar respecto el usuario que viene en el JWT
+    if (id !== req.uid) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'No tiene privilegios para editar este usuario'
+        });
+    }
+
+    // Actualizar la base de datos
+    const usuario = await Usuario.findByIdAndUpdate(id, { $push: { "envio": saveEnvio } }, { new: true });
+
+    res.json(usuario);
+
+}
+
+const usuariosEnvioPut = async (req = request, res = response) => {
+
+    const { id } = req.params;
+    const { _id, direccion, nombre, telefono } = req.body;
+
+    //Validar el usuario a modificar respecto el usuario que viene en el JWT
+    if (id !== req.uid) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'No tiene privilegios para editar este usuario'
+        });
+    }
+
+    // Actualizar la base de datos
+    const newEnvio = { _id, direccion, nombre, telefono };
+
+    const usuario = await Usuario.findOneAndUpdate({ _id: id },
+        { $set: { "envio.$[index]": newEnvio } },
+        {
+            arrayFilters: [{ "index._id": _id }],
+            new: true
+        });
+
+    res.json(usuario);
+
+}
+
+const usuariosEnvioDelete = async (req = request, res = response) => {
+
+    const { id } = req.params;
+    const { idEnvio } = req.body;
+
+    //Validar el usuario a eliminar respecto el usuario que viene en el JWT
+    if (id !== req.uid) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'No tiene privilegios para eliminar este usuario'
+        });
+    }
+
+    const query = { _id: id, estado: true }
+
+    // Borrado fisico
+    const envio = await Usuario.findOneAndUpdate(query, { $pull: { envio: { _id: idEnvio } } }, { new: true });
+
+    res.json({
+        envio
+    });
+}
+
+const usuariosFacturacionGet = async (req = request, res = response) => {
+
+    //Validar el usuario a modificar respecto el usuario que viene en el JWT
+    if (req.params.id !== req.uid) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'No tiene privilegios para editar este usuario'
+        });
+    }
+
+    const query = { _id: req.params.id, estado: true }
+
+    const facturacion = await Usuario.findById(query, "facturacion");
+
+    res.send(facturacion);
+}
+
+const usuariosFacturacionPost = async (req = request, res = response) => {
+
+    const { id } = req.params;
+    const { poblacion, pais, calle, numero, codigo, provincia } = req.body;
+    const saveFacturacion = { poblacion, pais, calle, numero, codigo, provincia }
+
+    //Validar el usuario a modificar respecto el usuario que viene en el JWT
+    if (id !== req.uid) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'No tiene privilegios para editar este usuario'
+        });
+    }
+
+    // Actualizar la base de datos
+    const usuario = await Usuario.findByIdAndUpdate(id, { "facturacion": saveFacturacion }, { new: true });
+
+    res.json(usuario);
+
+}
+
+const usuariosFacturacionDelete = async (req = request, res = response) => {
+
+    const { id } = req.params;
+
+    //Validar el usuario a eliminar respecto el usuario que viene en el JWT
+    if (id !== req.uid) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'No tiene privilegios para eliminar este usuario'
+        });
+    }
+
+    const usuario = await Usuario.findByIdAndUpdate(id, { facturacion: null }, { new: true });
+
+    res.json({
+        usuario
+    });
+}
+
 module.exports = {
     usuariosGet,
-    usuariosEnvioGet,
-    usuariosFacturacionGet,
+    usuariosGetId,
     usuariosPost,
-    usuariosDireccionPost,
-    usuariosFacturacionPost,
-    usuariosEnvioPost,
     usuariosPut,
-    // usuariosPatch,
     usuariosDelete,
+    // usuariosPatch,
+    usuariosEnvioGet,
+    usuariosEnvioPost,
+    usuariosEnvioPut,
+    usuariosEnvioDelete,
+    usuariosFacturacionGet,
+    usuariosFacturacionPost,
+    //usuariosFacturacionPut,
+    usuariosFacturacionDelete,
 }

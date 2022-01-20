@@ -54,6 +54,9 @@ const UsuarioSchema = Schema({
     telefono: {
         type: Number,
     },
+    predeterminado: {
+        type: Schema.Types.ObjectId,
+    },
     envio: [envio], // Dirección de los envios
     password: {
         type: String,
