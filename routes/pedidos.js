@@ -8,7 +8,7 @@ const { existeProductoPorId, productoExiste, existeUsuarioPorId, existeFacturaci
 const {
     //obtenerProductos,
     //obtenerProducto,
-    crearPedido,
+    crearPedido, obtenerPedidosUsuario,
     //actualizarProducto,
     //borrarProducto
 } = require('../controllers/pedidos');
@@ -24,6 +24,14 @@ const router = Router();
     check('id').custom(existeProductoPorId),
     validarCampos
 ], obtenerProducto);*/
+
+// Obtener un pedido por id - privado
+router.get('/:id', [
+    validarJWT,
+    check('id', 'El id no es valido').isMongoId(),
+    check('id').custom(existeUsuarioPorId),
+    validarCampos
+], obtenerPedidosUsuario);
 
 // Crear pedido - privado - cualquier persona con un token válido
 router.post('/', [

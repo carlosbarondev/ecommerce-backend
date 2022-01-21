@@ -20,10 +20,39 @@ const Pedido = require("../models/pedido");
         total,
         productos
     });
+}*/
+
+// obtenerPedidosUsuario - paginado - total - populate
+const obtenerPedidosUsuario = async (req = request, res = response) => {
+
+    const { id } = req.params;
+
+    //Validar el usuario a eliminar respecto el usuario que viene en el JWT
+    if (id !== req.uid) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'No tiene privilegios para ver este usuario'
+        });
+    }
+
+    // const { limite = 5, desde = 0 } = req.query;
+    const query = { usuario: id }
+
+    const [total, pedidos] = await Promise.all([
+        Pedido.countDocuments(query),
+        Pedido.find(query)
+        // .skip(Number(desde))
+        // .limit(Number(limite))
+    ]);
+
+    res.json({
+        total,
+        pedidos
+    });
 }
 
 // obtenerProducto - populate {}
-const obtenerProducto = async (req = request, res = response) => {
+/*const obtenerProducto = async (req = request, res = response) => {
 
     const query = { _id: req.params.id, estado: true }
 
@@ -82,6 +111,7 @@ const borrarProducto = async (req = request, res = response) => {
 module.exports = {
     //obtenerProductos,
     //obtenerProducto,
+    obtenerPedidosUsuario,
     crearPedido,
     //actualizarProducto,
     //borrarProducto
