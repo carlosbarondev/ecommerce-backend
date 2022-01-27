@@ -2,7 +2,7 @@ const { request, response } = require('express');
 const bcryptjs = require('bcryptjs');
 
 const Usuario = require('../models/usuario');
-
+const Producto = require('../models/producto');
 
 const usuariosGet = async (req = request, res = response) => {
 
@@ -260,6 +260,70 @@ const usuariosFacturacionDelete = async (req = request, res = response) => {
     });
 }
 
+const usuariosDeseosGet = async (req = request, res = response) => {
+
+    const { id } = req.params;
+
+    //Validar el usuario a eliminar respecto el usuario que viene en el JWT
+    if (id !== req.uid) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'No tiene privilegios para modificar este usuario'
+        });
+    }
+
+    const deseos = await Usuario.findOne({ "_id": id }, "deseos");
+    const productos = await Producto.find({ "_id": { $in: deseos.deseos } });
+
+    res.json({
+        productos
+    });
+}
+
+const usuariosDeseosPost = async (req = request, res = response) => {
+
+    const { id } = req.params;
+
+    //Validar el usuario a eliminar respecto el usuario que viene en el JWT
+    if (id !== req.uid) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'No tiene privilegios para modificar este usuario'
+        });
+    }
+
+    const { deseos } = req.body;
+
+    const usuario = await Usuario.findOneAndUpdate({ "_id": id, deseos: { $ne: deseos } }, { $push: { deseos: deseos } }, { new: true });
+
+    res.status(201).json({
+        usuario
+    });
+
+}
+
+const usuariosDeseosDelete = async (req = request, res = response) => {
+
+    const { id } = req.params;
+
+    //Validar el usuario a eliminar respecto el usuario que viene en el JWT
+    if (id !== req.uid) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'No tiene privilegios para eliminar este usuario'
+        });
+    }
+
+    const { idDeseo } = req.body;
+
+    // Borrado fisico
+    const usuario = await Usuario.findOneAndUpdate({ "_id": id }, { $pull: { deseos: idDeseo } }, { new: true });
+
+    res.json({
+        usuario
+    });
+}
+
 module.exports = {
     usuariosGet,
     usuariosGetId,
@@ -275,4 +339,7 @@ module.exports = {
     usuariosFacturacionPost,
     //usuariosFacturacionPut,
     usuariosFacturacionDelete,
+    usuariosDeseosGet,
+    usuariosDeseosPost,
+    usuariosDeseosDelete
 }

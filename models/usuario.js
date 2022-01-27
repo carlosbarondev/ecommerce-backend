@@ -41,27 +41,28 @@ const envio = Schema({
 });
 
 const UsuarioSchema = Schema({
-    facturacion: direccion, // Dirección de facturación
+    nombre: {
+        type: String,
+        required: [true, 'El nombre es obligatorio']
+    },
     correo: {
         type: String,
         required: [true, 'El correo es obligatorio'],
         unique: true
     },
-    nombre: {
-        type: String,
-        required: [true, 'El nombre es obligatorio']
-    },
-    telefono: {
-        type: Number,
-    },
-    predeterminado: {
-        type: Schema.Types.ObjectId,
-    },
-    envio: [envio], // Dirección de los envios
     password: {
         type: String,
         required: [true, 'La contraseña es obligatoria'],
     },
+    telefono: {
+        type: Number,
+    },
+    facturacion: direccion, // Dirección de facturación
+    envio: [envio], // Dirección de los envios
+    predeterminado: {
+        type: Schema.Types.ObjectId,
+    },
+    deseos: [{ type: Schema.Types.ObjectId, ref: 'Producto' }],
     img: {
         type: String,
     },

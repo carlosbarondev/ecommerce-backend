@@ -11,7 +11,9 @@ const {
     crearProducto,
     actualizarProducto,
     borrarProducto,
-    crearComentarioProducto
+    crearComentarioProducto,
+    obtenerComentarioProducto,
+    borrarComentarioProducto
 } = require('../controllers/productos');
 
 const router = Router();
@@ -54,6 +56,14 @@ router.delete('/:id', [
     validarCampos
 ], borrarProducto);
 
+// Obtener un producto por id - publico
+router.get('/valoraciones/:id', [
+    validarJWT,
+    check('id', 'El id no es valido').isMongoId(),
+    check('id').custom(existeUsuarioPorId),
+    validarCampos
+], obtenerComentarioProducto);
+
 // Crear comentario producto - privado - cualquier persona con un token válido
 router.post('/:id', [
     validarJWT,
@@ -67,5 +77,12 @@ router.post('/:id', [
     check('fecha', 'La fecha es obligatoria').not().isEmpty(),
     validarCampos
 ], crearComentarioProducto);
+
+router.delete('/valoraciones/:id', [
+    validarJWT,
+    check('id', 'El id no es valido').isMongoId(),
+    check('id').custom(existeUsuarioPorId),
+    validarCampos
+], borrarComentarioProducto);
 
 module.exports = router;

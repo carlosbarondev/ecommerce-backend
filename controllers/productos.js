@@ -1,6 +1,7 @@
 const { response } = require("express");
 const Producto = require("../models/producto");
 const Categoria = require("../models/categoria");
+const Pedido = require("../models/pedido");
 
 // obtenerProductos - paginado - total - populate
 const obtenerProductos = async (req = request, res = response) => {
@@ -90,6 +91,58 @@ const borrarProducto = async (req = request, res = response) => {
     });
 }
 
+const obtenerComentarioProducto = async (req = request, res = response) => {
+
+    const { id } = req.params;
+
+    //Validar el usuario a consultar respecto el usuario que viene en el JWT
+    if (id !== req.uid) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'No tiene privilegios para ver este usuario'
+        });
+    }
+
+    const valorados = await Producto.find({ "opinion.usuario": id }, { "nombre": 1, "img": 1, "opinion.$": 1 });
+
+    const productosSinOpinionUsuario = await Producto.find({ "opinion.usuario": { $nin: id } });
+
+    const noValorados = [];
+
+    for (const producto of productosSinOpinionUsuario) {
+        const pedidos = await Pedido.find({ "usuario": id, "producto.producto.nombre": producto.nombre });
+        if (pedidos.length > 0) {
+            noValorados.push(producto)
+        }
+    }
+    /*
+        await Promise.all( // Busca si el usuario ha comprado un producto sin opinion
+            productosSinOpinionUsuario.map(async producto => {
+                console.log(producto.nombre);
+    
+                const pedidos = await Pedido.find({ "usuario": id, "producto.producto.nombre": producto.nombre });
+                console.log(pedidos.length);
+    
+                if (pedidos.length > 0) {
+                    console.log('Hola Mundo');
+    
+                    noValorados.push(producto)
+                }
+            }))*/
+
+
+    /*if (opiniones.length === 0) {
+        return res.status(400).json({
+            msg: `El producto no tiene comentarios de este usuario`
+        });
+    }*/
+
+    res.json({
+        valorados,
+        noValorados
+    });
+}
+
 const crearComentarioProducto = async (req, res = response) => {
 
     const { id } = req.params;
@@ -109,11 +162,35 @@ const crearComentarioProducto = async (req, res = response) => {
 
 }
 
+// borrarProducto - estado: false
+const borrarComentarioProducto = async (req = request, res = response) => {
+
+    const { id } = req.params;
+    const { idProducto, idComentario } = req.body;
+
+    //Validar el usuario a eliminar respecto el usuario que viene en el JWT
+    if (id !== req.uid) {
+        return res.status(401).json({
+            ok: false,
+            msg: 'No tiene privilegios para eliminar el comentario del usuario'
+        });
+    }
+
+    // Borrado fisico
+    const comentarioBorrado = await Producto.findOneAndUpdate({ "_id": idProducto }, { $pull: { opinion: { _id: idComentario } } }, { new: true });
+
+    res.json({
+        comentarioBorrado
+    });
+}
+
 module.exports = {
     obtenerProductos,
     obtenerProducto,
     crearProducto,
     actualizarProducto,
     borrarProducto,
-    crearComentarioProducto
+    obtenerComentarioProducto,
+    crearComentarioProducto,
+    borrarComentarioProducto
 }

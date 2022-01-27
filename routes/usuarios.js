@@ -19,6 +19,9 @@ const {
     usuariosFacturacionGet,
     usuariosFacturacionPost,
     usuariosFacturacionDelete,
+    usuariosDeseosGet,
+    usuariosDeseosPost,
+    usuariosDeseosDelete,
 } = require('../controllers/usuarios');
 
 const router = Router();
@@ -159,5 +162,26 @@ router.delete('/facturacion/:id', [
     check('id').custom(existeUsuarioPorId),
     validarCampos
 ], usuariosFacturacionDelete);
+
+router.get('/deseos/:id', [
+    validarJWT,
+    check('id', 'El id no es valido').isMongoId(),
+    check('id').custom(existeUsuarioPorId),
+    validarCampos
+], usuariosDeseosGet);
+
+router.post('/deseos/:id', [
+    validarJWT,
+    check('id', 'El id no es valido').isMongoId(),
+    check('id').custom(existeUsuarioPorId),
+    validarCampos
+], usuariosDeseosPost);
+
+router.delete('/deseos/:id', [
+    validarJWT,
+    check('id', 'El id no es valido').isMongoId(),
+    check('id').custom(existeUsuarioPorId),
+    validarCampos
+], usuariosDeseosDelete);
 
 module.exports = router;
