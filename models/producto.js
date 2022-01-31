@@ -26,12 +26,11 @@ const ProductoSchema = Schema({
     categoria: {
         type: Schema.Types.ObjectId,
         ref: 'Categoria',
-        required: true
+        required: [true, 'La categoría es obligatoria']
     },
-    usuario: {
+    subcategoria: {
         type: Schema.Types.ObjectId,
-        ref: 'Usuario',
-        required: true
+        required: [true, 'La subcategoría es obligatoria']
     },
     rating: {
         type: Number
@@ -60,12 +59,7 @@ const ProductoSchema = Schema({
                 required: [true, 'La fecha es obligatoria'],
             },
         }
-    ],
-    estado: {
-        type: Boolean,
-        required: true,
-        default: true
-    }
+    ]
 });
 
 /*ProductoSchema.methods.toJSON = function () {

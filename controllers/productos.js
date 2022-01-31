@@ -7,14 +7,12 @@ const Pedido = require("../models/pedido");
 const obtenerProductos = async (req = request, res = response) => {
 
     // const { limite = 5, desde = 0 } = req.query;
-    const query = { estado: true }
 
     const [total, productos] = await Promise.all([
-        Producto.countDocuments(query),
-        Producto.find(query)
+        Producto.countDocuments(),
+        Producto.find()
             // .skip(Number(desde))
             // .limit(Number(limite))
-            .populate("usuario", "nombre")
             .populate("categoria", "nombre")
     ]);
 
@@ -29,7 +27,7 @@ const obtenerProducto = async (req = request, res = response) => {
 
     const query = { _id: req.params.id, estado: true }
 
-    const producto = await Producto.findOne(query).populate("usuario", "nombre").populate("categoria", "nombre").populate("opinion.usuario", "nombre");
+    const producto = await Producto.findOne(query).populate("categoria", "nombre").populate("opinion.usuario", "nombre");
 
     if (producto.length === 0) {
         return res.status(400).json({
@@ -44,9 +42,9 @@ const obtenerProducto = async (req = request, res = response) => {
 
 const crearProducto = async (req, res = response) => {
 
-    const { nombre, descripcion, precio, stock, img, categoria } = req.body;
+    const { nombre, descripcion, precio, stock, img, categoria, subcategoria } = req.body;
 
-    const productoDB = await Producto.findOne({ nombre: nombre.toLowerCase() });
+    const productoDB = await Producto.findOne({ nombre: nombre });
 
     if (productoDB) {
         return res.status(400).json({
@@ -54,9 +52,24 @@ const crearProducto = async (req, res = response) => {
         });
     }
 
-    const { _id } = await Categoria.findOne({ nombre: categoria.toLowerCase() });
+    const categoriaBuscar = await Categoria.findOne({ nombre: categoria }, { "subcategorias": { $elemMatch: { "nombre": subcategoria } } });
 
-    const producto = new Producto({ nombre: nombre.toLowerCase(), descripcion, precio, stock, img, categoria: _id, usuario: req.usuario._id });
+    if (categoriaBuscar.subcategorias.length === 0) {
+        return res.status(400).json({
+            msg: `La subcategoría ${subcategoria}, no existe`
+        });
+    }
+
+    const { _id } = categoriaBuscar;
+    const idSubCategoria = categoriaBuscar.subcategorias[0]._id;
+
+    const producto = new Producto({ nombre: nombre, descripcion, precio, stock, img, categoria: _id, subcategoria: idSubCategoria });
+
+    const agrega = await Categoria.findOneAndUpdate(_id, { $push: { "subcategorias.$[el].productos": producto._id } }, // Agrega el id del producto en la subcategoria
+        {
+            arrayFilters: [{ "el.nombre": subcategoria }],
+            new: true
+        });
 
     // Guardar en la base de datos
     await producto.save();
@@ -71,7 +84,7 @@ const actualizarProducto = async (req = request, res = response) => {
     const { id } = req.params;
     const { nombre, descripcion, precio, stock, img, categoria } = req.body;
 
-    const producto = await Producto.findByIdAndUpdate(id, { nombre: nombre.toLowerCase(), descripcion, precio, stock, img, categoria, usuario: req.usuario._id }, { new: true }); // new devuelve la respuesta actualizada
+    const producto = await Producto.findByIdAndUpdate(id, { nombre: nombre, descripcion, precio, stock, img, categoria, usuario: req.usuario._id }, { new: true }); // new devuelve la respuesta actualizada
 
     res.json(producto);
 }
@@ -115,27 +128,6 @@ const obtenerComentarioProducto = async (req = request, res = response) => {
             noValorados.push(producto)
         }
     }
-    /*
-        await Promise.all( // Busca si el usuario ha comprado un producto sin opinion
-            productosSinOpinionUsuario.map(async producto => {
-                console.log(producto.nombre);
-    
-                const pedidos = await Pedido.find({ "usuario": id, "producto.producto.nombre": producto.nombre });
-                console.log(pedidos.length);
-    
-                if (pedidos.length > 0) {
-                    console.log('Hola Mundo');
-    
-                    noValorados.push(producto)
-                }
-            }))*/
-
-
-    /*if (opiniones.length === 0) {
-        return res.status(400).json({
-            msg: `El producto no tiene comentarios de este usuario`
-        });
-    }*/
 
     res.json({
         valorados,

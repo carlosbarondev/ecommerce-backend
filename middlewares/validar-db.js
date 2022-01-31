@@ -12,14 +12,21 @@ const emailExiste = async (correo = '') => {
 }
 
 const categoriaExiste = async (categoria = '') => {
-    const existeCategoria = await Categoria.findOne({ nombre: categoria.toLowerCase() });
+    const existeCategoria = await Categoria.findOne({ nombre: categoria });
     if (!existeCategoria) {
         throw new Error(`La categoria ${categoria} no existe`)
     }
 }
 
+const subcategoriaExiste = async (categoria, subcategoria = '') => {
+    const existeSubCategoria = await Categoria.findOne({ nombre: categoria, "subcategorias": { $elemMatch: { "nombre": subcategoria } } });
+    if (!existeSubCategoria) {
+        throw new Error(`La subcategoria ${subcategoria} no existe`)
+    }
+}
+
 const productoExiste = async (producto = '') => {
-    const existeProducto = await Producto.findOne({ nombre: producto.toLowerCase() });
+    const existeProducto = await Producto.findOne({ nombre: producto });
     if (existeProducto) {
         throw new Error(`El producto ${producto} ya está registrado`)
     }
@@ -77,6 +84,7 @@ const coleccionesPermitidas = (coleccion = '', colecciones = []) => {
 module.exports = {
     emailExiste,
     categoriaExiste,
+    subcategoriaExiste,
     productoExiste,
     existeUsuarioPorId,
     existeCategoriaPorId,

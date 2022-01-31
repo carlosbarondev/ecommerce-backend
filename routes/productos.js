@@ -3,7 +3,7 @@ const { check } = require('express-validator');
 
 const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
-const { existeProductoPorId, categoriaExiste, productoExiste, existeUsuarioPorId } = require('../middlewares/validar-db');
+const { existeProductoPorId, categoriaExiste, productoExiste, existeUsuarioPorId, subcategoriaExiste } = require('../middlewares/validar-db');
 
 const {
     obtenerProductos,

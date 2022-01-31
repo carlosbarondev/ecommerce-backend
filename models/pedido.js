@@ -29,11 +29,6 @@ const PedidoSchema = Schema({
     total: {
         type: Number,
         required: [true, 'El importe total es obligatorio'],
-    },
-    estado: {
-        type: Boolean,
-        required: true,
-        default: true
     }
 });
 
