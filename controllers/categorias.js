@@ -1,20 +1,19 @@
+const mongoose = require('mongoose');
 const { response } = require("express");
-const { subcategoriaExiste } = require("../middlewares/validar-db");
-const Categoria = require('../models/categoria');
+const { Categoria, Subcategoria } = require('../models/categoria');
 
 
 // obtenerCategorias - paginado - total - populate
 const obtenerCategorias = async (req = request, res = response) => {
 
-    const { limite = 5, desde = 0 } = req.query;
-    const query = { estado: true }
+    // const { limite = 5, desde = 0 } = req.query;
 
     const [total, categorias] = await Promise.all([
-        Categoria.countDocuments(query),
-        Categoria.find(query)
-            .skip(Number(desde))
-            .limit(Number(limite))
-            .populate("subcategorias.productos", "nombre")
+        Categoria.countDocuments(),
+        Categoria.find()
+            //.skip(Number(desde))
+            //.limit(Number(limite))
+            .populate("subcategorias", "nombre productos")
     ]);
 
     res.json({
@@ -26,9 +25,18 @@ const obtenerCategorias = async (req = request, res = response) => {
 // obtenerCategoria - populate {}
 const obtenerCategoria = async (req = request, res = response) => {
 
-    const query = { nombre: req.params.id }
+    const { id } = req.params;
 
-    const categoria = await Categoria.findOne(query);
+    let query;
+
+    if (mongoose.isValidObjectId(id)) { // El id puede ser un id de Mongo o el nombre de la categoria
+        query = { "_id": id }
+    } else {
+        query = { "nombre": id }
+    }
+
+    const categoria = await Categoria.findOne(query)
+        .populate("subcategorias");
 
     res.json({
         categoria
@@ -39,12 +47,22 @@ const obtenerSubCategoria = async (req = request, res = response) => {
 
     const { id } = req.params;
 
-    const { nombre, subcategorias } = await Categoria.findOne({ "subcategorias": { $elemMatch: { "nombre": id } } }, { "nombre": 1, "subcategorias": { $elemMatch: { "nombre": id } } })
-        .populate("subcategorias.productos", "nombre descripcion precio img categoria subcategoria");
+    let query;
+
+    if (mongoose.isValidObjectId(id)) { // El id puede ser un id de Mongo o el nombre de la categoria
+        query = { "_id": id }
+    } else {
+        query = { "nombre": id }
+    }
+
+    const subcategoria = await Subcategoria.findOne(query)
+        .populate({
+            path: 'productos',
+            populate: { path: 'categoria subcategoria' },
+        })
 
     res.json({
-        nombre,
-        subcategoria: subcategorias[0]
+        subcategoria
     });
 }
 
@@ -60,12 +78,23 @@ const crearCategoria = async (req, res = response) => {
         });
     }
 
+    let newCategories = [];
+
+    for (const sub of subcategorias) {
+        const newsub = new Subcategoria({
+            nombre: sub.nombre,
+            productos: sub.productos
+        });
+        await newsub.save(); // Guardar Subcategoria en la base de datos
+        newCategories.push(newsub);
+    }
+
     const categoria = new Categoria({
         nombre: nombre,
-        subcategorias
+        subcategorias: newCategories
     });
 
-    // Guardar en la base de datos
+    // Guardar Categoria en la base de datos
     await categoria.save();
 
     res.status(201).json(categoria);
@@ -78,28 +107,37 @@ const actualizarCategoria = async (req = request, res = response) => {
     const { id } = req.params;
     const { nombre, subcategorias } = req.body;
 
+    if (nombre) { // Si recibe el nombre se actualiza el nombre de la Categoria
+        await Categoria.findByIdAndUpdate(id, { "nombre": nombre });
+    }
+
     let categoria;
 
-    categoria = await Categoria.findByIdAndUpdate(id, { nombre: nombre }, { new: true });
+    const categoriaBuscar = await Categoria.findOne({ "_id": id })
+        .populate("subcategorias", "nombre productos");
 
-    if (subcategorias) {
+    for (const sub of subcategorias) {
 
-        for (const sub of subcategorias) {
+        const existeSubCategoria = categoriaBuscar.subcategorias.find(element => element.nombre === sub.nombre);
 
-            const existeSubCategoria = await Categoria.findOne({ "_id": id, "subcategorias": { $elemMatch: { "nombre": sub.nombre } } });
+        if (existeSubCategoria) { // Si existe la Subcategoria se actualiza
 
-            if (existeSubCategoria) {
+            categoria = await Subcategoria.findOneAndUpdate({ "nombre": sub.nombre },
+                { $push: { "productos": sub.productos } },
+                { new: true }
+            );
 
-                categoria = await Categoria.findOneAndUpdate({ "_id": id },
-                    { $set: { "subcategorias.$[index].productos": sub.productos } },
-                    {
-                        arrayFilters: [{ "index.nombre": sub.nombre }],
-                        new: true
-                    });
+        } else { // Si NO existe la Subcategoria se crea y se añade a la Categoria
 
-            } else {
-                categoria = await Categoria.findByIdAndUpdate(id, { $push: { "subcategorias": sub } }, { new: true }); // new Devuelve la respuesta actualizada
-            }
+            const newsub = new Subcategoria({
+                nombre: sub.nombre,
+                productos: sub.productos
+            });
+
+            await newsub.save(); // Guardar Subcategoria en la base de datos
+
+            categoria = await Categoria.findByIdAndUpdate(id, { $push: { "subcategorias": newsub } }, { new: true }); // new Devuelve la respuesta actualizada
+
         }
     }
 
@@ -114,9 +152,18 @@ const borrarCategoria = async (req = request, res = response) => {
     const { id } = req.params;
 
     // Borrado fisico
-    // const categoria = await Categoria.findByIdAndDelete(id);
 
-    const categoriaBorrada = await Categoria.findByIdAndUpdate(id, { estado: false }, { new: true });
+    const categoria = await Categoria.findById(id);
+
+    for (const sub of categoria.subcategorias) { //Borrar Subcategorias de la Categoria
+        await Subcategoria.findByIdAndDelete(sub._id);
+    }
+
+    const categoriaBorrada = await Categoria.findByIdAndDelete(id); // Borrar la Categoria
+
+    // Borrado lógico
+
+    // const categoriaBorrada = await Categoria.findByIdAndUpdate(id, { estado: false }, { new: true });
 
     res.json({
         categoriaBorrada

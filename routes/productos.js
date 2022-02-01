@@ -23,8 +23,8 @@ router.get('/', obtenerProductos);
 
 // Obtener un producto por id - publico
 router.get('/:id', [
-    check('id', 'El id no es valido').isMongoId(),
-    check('id').custom(existeProductoPorId),
+    //check('id', 'El id no es valido').isMongoId(),
+    //check('id').custom(existeProductoPorId),
     validarCampos
 ], obtenerProducto);
 

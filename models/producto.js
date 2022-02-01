@@ -30,6 +30,7 @@ const ProductoSchema = Schema({
     },
     subcategoria: {
         type: Schema.Types.ObjectId,
+        ref: 'Subcategoria',
         required: [true, 'La subcategoría es obligatoria']
     },
     rating: {
@@ -76,6 +77,10 @@ ProductoSchema.post('findOneAndUpdate', async function (doc) { // Actualiza el r
     ));
 
     r = r / doc.opinion.length;
+
+    if (isNaN(r)) {
+        r = 0;
+    }
 
     doc.rating = r;
     doc.save();

@@ -1,26 +1,6 @@
 const { response } = require("express");
 const Pedido = require("../models/pedido");
 
-// obtenerProductos - paginado - total - populate
-/*const obtenerProductos = async (req = request, res = response) => {
-
-    // const { limite = 5, desde = 0 } = req.query;
-    const query = { estado: true }
-
-    const [total, productos] = await Promise.all([
-        Producto.countDocuments(query),
-        Producto.find(query)
-            // .skip(Number(desde))
-            // .limit(Number(limite))
-            .populate("usuario", "nombre")
-            .populate("categoria", "nombre")
-    ]);
-
-    res.json({
-        total,
-        productos
-    });
-}*/
 
 // obtenerPedidosUsuario - paginado - total - populate
 const obtenerPedidosUsuario = async (req = request, res = response) => {

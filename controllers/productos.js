@@ -1,7 +1,10 @@
+const mongoose = require('mongoose');
 const { response } = require("express");
+
+const { Categoria, Subcategoria } = require('../models/categoria');
 const Producto = require("../models/producto");
-const Categoria = require("../models/categoria");
 const Pedido = require("../models/pedido");
+
 
 // obtenerProductos - paginado - total - populate
 const obtenerProductos = async (req = request, res = response) => {
@@ -13,7 +16,7 @@ const obtenerProductos = async (req = request, res = response) => {
         Producto.find()
             // .skip(Number(desde))
             // .limit(Number(limite))
-            .populate("categoria", "nombre")
+            .populate("categoria subcategoria")
     ]);
 
     res.json({
@@ -25,9 +28,19 @@ const obtenerProductos = async (req = request, res = response) => {
 // obtenerProducto - populate {}
 const obtenerProducto = async (req = request, res = response) => {
 
-    const query = { _id: req.params.id, estado: true }
+    const { id } = req.params;
 
-    const producto = await Producto.findOne(query).populate("categoria", "nombre").populate("opinion.usuario", "nombre");
+    let query;
+
+    if (mongoose.isValidObjectId(id)) { // El id puede ser un id de Mongo o el nombre del producto
+        query = { "_id": id }
+    } else {
+        query = { "nombre": id.replace(/-/g, ' ') }
+    }
+
+    const producto = await Producto.findOne(query)
+        .populate("categoria subcategoria opinion.usuario");
+
 
     if (producto.length === 0) {
         return res.status(400).json({
@@ -52,29 +65,29 @@ const crearProducto = async (req, res = response) => {
         });
     }
 
-    const categoriaBuscar = await Categoria.findOne({ nombre: categoria }, { "subcategorias": { $elemMatch: { "nombre": subcategoria } } });
+    const categoriaBuscar = await Categoria.findOne({ "nombre": categoria })
+        .populate("subcategorias")
+        .exec(async function (err, cat) {
+            if (err) console.log(err);
+            const existeSubCategoria = await cat.subcategorias.find(element => element.nombre === subcategoria);
+            if (!existeSubCategoria) {
+                return res.status(400).json({
+                    msg: `La subcategoría ${subcategoria}, no existe`
+                });
+            }
 
-    if (categoriaBuscar.subcategorias.length === 0) {
-        return res.status(400).json({
-            msg: `La subcategoría ${subcategoria}, no existe`
+            const producto = new Producto({ nombre: nombre, descripcion, precio, stock, img, categoria: cat._id, subcategoria: existeSubCategoria._id });
+
+            const agrega = await Subcategoria.findByIdAndUpdate(existeSubCategoria._id, { $push: { "productos": producto._id } }, // Agrega el id del producto en la subcategoria
+                {
+                    new: true
+                });
+
+            // Guardar en la base de datos
+            await producto.save();
+
+            res.status(201).json(producto);
         });
-    }
-
-    const { _id } = categoriaBuscar;
-    const idSubCategoria = categoriaBuscar.subcategorias[0]._id;
-
-    const producto = new Producto({ nombre: nombre, descripcion, precio, stock, img, categoria: _id, subcategoria: idSubCategoria });
-
-    const agrega = await Categoria.findOneAndUpdate(_id, { $push: { "subcategorias.$[el].productos": producto._id } }, // Agrega el id del producto en la subcategoria
-        {
-            arrayFilters: [{ "el.nombre": subcategoria }],
-            new: true
-        });
-
-    // Guardar en la base de datos
-    await producto.save();
-
-    res.status(201).json(producto);
 
 }
 

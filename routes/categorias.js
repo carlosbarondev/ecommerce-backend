@@ -8,10 +8,10 @@ const { existeCategoriaPorId } = require('../middlewares/validar-db');
 const {
     obtenerCategorias,
     obtenerCategoria,
-    obtenerSubCategoria,
     crearCategoria,
     actualizarCategoria,
-    borrarCategoria
+    borrarCategoria,
+    obtenerSubCategoria
 } = require('../controllers/categorias');
 
 const router = Router();
@@ -26,8 +26,10 @@ router.get('/:id', [
     validarCampos
 ], obtenerCategoria);
 
+// Obtener una categoria por id - publico
 router.get('/subcategoria/:id', [
     //check('id', 'El id no es valido').isMongoId(),
+    //check('id').custom(existeCategoriaPorId),
     validarCampos
 ], obtenerSubCategoria);
 
@@ -35,8 +37,6 @@ router.get('/subcategoria/:id', [
 router.post('/', [
     validarJWT,
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-    //check('subcategorias.*.productos', 'El id del producto no es válido').isMongoId(),
-    //check('subcategorias.*.productos').custom(existeProductoPorId),
     validarCampos
 ], crearCategoria);
 
@@ -45,8 +45,6 @@ router.put('/:id', [
     validarJWT,
     check('id', 'El id no es valido').isMongoId(),
     check('id').custom(existeCategoriaPorId),
-    //check('subcategorias.*.productos', 'El id del producto no es válido').isMongoId(),
-    //check('subcategorias.*.productos').custom(existeProductoPorId),
     validarCampos
 ], actualizarCategoria);
 
