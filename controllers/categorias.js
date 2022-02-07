@@ -85,7 +85,11 @@ const crearCategoria = async (req, res = response) => {
             nombre: sub.nombre,
             productos: sub.productos
         });
-        await newsub.save(); // Guardar Subcategoria en la base de datos
+        try {
+            await newsub.save(); // Guardar Subcategoria en la base de datos
+        } catch (error) {
+            return res.status(500).json(error);
+        }
         newCategories.push(newsub);
     }
 

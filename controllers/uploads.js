@@ -6,6 +6,7 @@ cloudinary.config(process.env.CLOUDINARY_URL);
 
 const Usuario = require('../models/usuario');
 const Producto = require('../models/producto');
+const { Categoria, Subcategoria } = require('../models/categoria');
 
 
 const mostrarImagen = async (req, res = response) => {
@@ -28,6 +29,22 @@ const mostrarImagen = async (req, res = response) => {
             if (!modelo) {
                 return res.status(400).json({
                     msg: `No existe un producto con el id ${id}`
+                });
+            }
+            break;
+        case 'categorias':
+            modelo = await Producto.findById(id);
+            if (!modelo) {
+                return res.status(400).json({
+                    msg: `No existe una categoria con el id ${id}`
+                });
+            }
+            break;
+        case 'subcategorias':
+            modelo = await Producto.findById(id);
+            if (!modelo) {
+                return res.status(400).json({
+                    msg: `No existe una subcategoria con el id ${id}`
                 });
             }
             break;
@@ -77,6 +94,28 @@ const actualizarImagenCloudinary = async (req, res = response) => {
             if (!modelo) {
                 return res.status(400).json({
                     msg: `No existe un producto con el id ${id}`
+                });
+            }
+
+            break;
+
+        case 'categorias':
+
+            modelo = await Categoria.findById(id);
+            if (!modelo) {
+                return res.status(400).json({
+                    msg: `No existe una categoria con el id ${id}`
+                });
+            }
+
+            break;
+
+        case 'subcategorias':
+
+            modelo = await Subcategoria.findById(id);
+            if (!modelo) {
+                return res.status(400).json({
+                    msg: `No existe una subcategoria con el id ${id}`
                 });
             }
 

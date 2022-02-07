@@ -13,7 +13,7 @@ const router = Router();
 
 router.get('/:coleccion/:id', [
     check('id', 'El id no es valido').isMongoId(),
-    check('coleccion').custom(c => coleccionesPermitidas(c, ['usuarios', 'productos'])),
+    check('coleccion').custom(c => coleccionesPermitidas(c, ['usuarios', 'productos', 'categorias', 'subcategorias'])),
     validarCampos
 ], mostrarImagen);
 
@@ -21,7 +21,7 @@ router.put('/:coleccion/:id', [
     validarJWT,
     validarArchivoSubir,
     check('id', 'El id no es valido').isMongoId(),
-    check('coleccion').custom(c => coleccionesPermitidas(c, ['usuarios', 'productos'])),
+    check('coleccion').custom(c => coleccionesPermitidas(c, ['usuarios', 'productos', 'categorias', 'subcategorias'])),
     validarCampos
 ], actualizarImagenCloudinary);
 

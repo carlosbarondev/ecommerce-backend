@@ -41,10 +41,15 @@ const obtenerProducto = async (req = request, res = response) => {
     const producto = await Producto.findOne(query)
         .populate("categoria subcategoria opinion.usuario");
 
-
-    if (producto.length === 0) {
+    if (producto) {
+        if (producto.length === 0) {
+            return res.status(400).json({
+                msg: `El producto no existe`
+            });
+        }
+    } else {
         return res.status(400).json({
-            msg: `El producto no existe`
+            msg: `El producto no ha sido encontrado`
         });
     }
 

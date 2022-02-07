@@ -11,7 +11,10 @@ const SubcategoriaSchema = Schema({
             type: Schema.Types.ObjectId,
             ref: 'Producto'
         }
-    ]
+    ],
+    img: {
+        type: String
+    },
 });
 
 const CategoriaSchema = Schema({
@@ -25,7 +28,10 @@ const CategoriaSchema = Schema({
             type: Schema.Types.ObjectId,
             ref: 'Subcategoria'
         }
-    ]
+    ],
+    img: {
+        type: String
+    },
 });
 
 const Subcategoria = model('Subcategoria', SubcategoriaSchema);
