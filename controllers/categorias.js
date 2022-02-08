@@ -6,13 +6,14 @@ const { Categoria, Subcategoria } = require('../models/categoria');
 // obtenerCategorias - paginado - total - populate
 const obtenerCategorias = async (req = request, res = response) => {
 
-    // const { limite = 5, desde = 0 } = req.query;
+    const { desde = 0, limite = 50 } = req.query;
 
     const [total, categorias] = await Promise.all([
         Categoria.countDocuments(),
         Categoria.find()
-            //.skip(Number(desde))
-            //.limit(Number(limite))
+            .sort("-vendidos")
+            .skip(Number(desde))
+            .limit(Number(limite))
             .populate("subcategorias", "nombre productos")
     ]);
 
@@ -109,10 +110,10 @@ const crearCategoria = async (req, res = response) => {
 const actualizarCategoria = async (req = request, res = response) => {
 
     const { id } = req.params;
-    const { nombre, subcategorias } = req.body;
+    const { nombre, subcategorias, vendidos = 0 } = req.body;
 
     if (nombre) { // Si recibe el nombre se actualiza el nombre de la Categoria
-        await Categoria.findByIdAndUpdate(id, { "nombre": nombre });
+        await Categoria.findByIdAndUpdate(id, { "nombre": nombre, $inc: { "vendidos": vendidos } });
     }
 
     let categoria;

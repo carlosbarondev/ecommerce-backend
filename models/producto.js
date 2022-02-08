@@ -36,6 +36,10 @@ const ProductoSchema = Schema({
     rating: {
         type: Number
     },
+    vendido: {
+        type: Number,
+        default: 0
+    },
     opinion: [
         {
             titulo: {

@@ -9,13 +9,14 @@ const Pedido = require("../models/pedido");
 // obtenerProductos - paginado - total - populate
 const obtenerProductos = async (req = request, res = response) => {
 
-    // const { limite = 5, desde = 0 } = req.query;
+    const { desde = 0, limite = 50 } = req.query;
 
     const [total, productos] = await Promise.all([
         Producto.countDocuments(),
         Producto.find()
-            // .skip(Number(desde))
-            // .limit(Number(limite))
+            .sort("-rating")
+            .skip(Number(desde))
+            .limit(Number(limite))
             .populate("categoria subcategoria")
     ]);
 
@@ -56,6 +57,34 @@ const obtenerProducto = async (req = request, res = response) => {
     res.json({
         producto
     });
+}
+
+const obtenerMejorProductoCategoria = async (req = request, res = response) => {
+
+    const { desde = 0, limite = 50, categoria, ordenar = "-vendido" } = req.query;
+
+    try {
+        const producto = Producto.find()
+            .sort(ordenar)
+            .populate("subcategoria")
+            .populate({ path: 'categoria', match: { "nombre": categoria } })
+            .exec(function (error, prod) {
+                if (error) {
+                    return console.log(error);
+                }
+
+                res.json({
+                    productos: prod.filter(p => p.categoria !== null)
+                });
+            });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(400).json({
+            msg: error
+        });
+    }
+
 }
 
 const crearProducto = async (req, res = response) => {
@@ -134,9 +163,10 @@ const obtenerComentarioProducto = async (req = request, res = response) => {
         });
     }
 
-    const valorados = await Producto.find({ "opinion.usuario": id }, { "nombre": 1, "img": 1, "opinion.$": 1 });
+    const valorados = await Producto.find({ "opinion.usuario": id }, { "nombre": 1, "categoria": 1, "subcategoria": 1, "img": 1, "opinion.$": 1 })
+        .populate("subcategoria categoria");
 
-    const productosSinOpinionUsuario = await Producto.find({ "opinion.usuario": { $nin: id } });
+    const productosSinOpinionUsuario = await Producto.find({ "opinion.usuario": { $nin: id } }).populate("subcategoria categoria");
 
     const noValorados = [];
 
@@ -197,6 +227,7 @@ const borrarComentarioProducto = async (req = request, res = response) => {
 module.exports = {
     obtenerProductos,
     obtenerProducto,
+    obtenerMejorProductoCategoria,
     crearProducto,
     actualizarProducto,
     borrarProducto,

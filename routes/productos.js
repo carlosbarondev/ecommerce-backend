@@ -3,11 +3,12 @@ const { check } = require('express-validator');
 
 const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
-const { existeProductoPorId, categoriaExiste, productoExiste, existeUsuarioPorId, subcategoriaExiste } = require('../middlewares/validar-db');
+const { existeProductoPorId, categoriaExiste, productoExiste, existeUsuarioPorId } = require('../middlewares/validar-db');
 
 const {
     obtenerProductos,
     obtenerProducto,
+    obtenerMejorProductoCategoria,
     crearProducto,
     actualizarProducto,
     borrarProducto,
@@ -22,11 +23,17 @@ const router = Router();
 router.get('/', obtenerProductos);
 
 // Obtener un producto por id - publico
-router.get('/:id', [
+router.get('/producto/:id', [
     //check('id', 'El id no es valido').isMongoId(),
     //check('id').custom(existeProductoPorId),
     validarCampos
 ], obtenerProducto);
+
+router.get('/mejor', [
+    //check('id', 'El id no es valido').isMongoId(),
+    //check('id').custom(existeProductoPorId),
+    validarCampos
+], obtenerMejorProductoCategoria);
 
 // Crear producto - privado - cualquier persona con un token válido
 router.post('/', [

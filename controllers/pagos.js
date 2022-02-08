@@ -1,4 +1,6 @@
 const { response } = require("express");
+const { Categoria } = require("../models/categoria");
+const Producto = require('../models/producto');
 
 // This is your test secret API key.
 const stripe = require("stripe")('sk_test_51JjACUBNBMvlMZgl5cp6YRDwCft9FDz0LRSmSMI1VH3T3iVROPEucjmcab8zCxIKMN05cm1GOeqfkEtorXkxqn4R00PucrBI4X');
@@ -141,12 +143,17 @@ const crearPago = async (req, res = response) => {
             },
         });
 
+        for (const item of items) { // Actualiza las unidades vendidas de una determinada categoría y producto
+            await Categoria.findByIdAndUpdate({ "_id": item.producto.categoria._id }, { $inc: { "vendidos": item.unidades } });
+            await Producto.findByIdAndUpdate({ "_id": item.producto._id }, { $inc: { "vendido": item.unidades } });
+        }
+
         res.send({
             clientSecret: paymentIntent.client_secret,
         });
 
     } catch (error) {
-        //console.log(error);
+        console.log(error);
         return res.status(500).json({
             msg: error.message
         });
