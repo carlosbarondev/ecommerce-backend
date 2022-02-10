@@ -272,11 +272,11 @@ const usuariosDeseosGet = async (req = request, res = response) => {
         });
     }
 
-    const deseos = await Usuario.findOne({ "_id": id }, "deseos");
-    const productos = await Producto.find({ "_id": { $in: deseos.deseos } });
+    const deseos = await Usuario.findOne({ "_id": id }, "deseos")
+        .populate("deseos");
 
     res.json({
-        productos
+        deseos
     });
 }
 
@@ -314,10 +314,11 @@ const usuariosDeseosDelete = async (req = request, res = response) => {
         });
     }
 
-    const { idDeseo } = req.body;
+    const { ids } = req.body;
 
     // Borrado fisico
-    const usuario = await Usuario.findOneAndUpdate({ "_id": id }, { $pull: { deseos: idDeseo } }, { new: true });
+    const usuario = await Usuario.findOneAndUpdate({ "_id": id }, { $pull: { deseos: { "$in": ids } } }, { new: true })
+        .populate("deseos");
 
     res.json({
         usuario
