@@ -9,12 +9,12 @@ const Pedido = require("../models/pedido");
 // obtenerProductos - paginado - total - populate
 const obtenerProductos = async (req = request, res = response) => {
 
-    const { desde = 0, limite = 50 } = req.query;
+    const { desde = 0, limite = 50, ordenar = "-rating" } = req.query;
 
     const [total, productos] = await Promise.all([
         Producto.countDocuments(),
         Producto.find()
-            .sort("-rating")
+            .sort(ordenar)
             .skip(Number(desde))
             .limit(Number(limite))
             .populate("categoria subcategoria")
