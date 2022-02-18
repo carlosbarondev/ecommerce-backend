@@ -272,8 +272,13 @@ const usuariosDeseosGet = async (req = request, res = response) => {
         });
     }
 
-    const deseos = await Usuario.findOne({ "_id": id }, "deseos")
-        .populate("deseos");
+    const deseos = await Usuario.findOne({ "_id": id })
+        .populate({
+            path: 'deseos',
+            populate: {
+                path: 'categoria subcategoria'
+            }
+        });
 
     res.json({
         deseos

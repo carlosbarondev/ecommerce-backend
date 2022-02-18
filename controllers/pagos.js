@@ -145,7 +145,7 @@ const crearPago = async (req, res = response) => {
 
         for (const item of items) { // Actualiza las unidades vendidas de una determinada categoría y producto
             await Categoria.findByIdAndUpdate({ "_id": item.producto.categoria._id }, { $inc: { "vendidos": item.unidades } });
-            await Producto.findByIdAndUpdate({ "_id": item.producto._id }, { $inc: { "vendido": item.unidades } });
+            await Producto.findByIdAndUpdate({ "_id": item.producto._id }, { $inc: { "vendido": item.unidades, "stock": -item.unidades } });
         }
 
         res.send({
