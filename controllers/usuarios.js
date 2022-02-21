@@ -7,11 +7,11 @@ const Producto = require('../models/producto');
 const usuariosGet = async (req = request, res = response) => {
 
     const { limite = 5, desde = 0 } = req.query;
-    const query = { estado: true }
+    // const query = { estado: true }
 
     const [total, usuarios] = await Promise.all([
-        Usuario.countDocuments(query),
-        Usuario.find(query)
+        Usuario.countDocuments(),
+        Usuario.find()
             .skip(Number(desde))
             .limit(Number(limite))
     ]);
@@ -62,14 +62,24 @@ const usuariosPost = async (req = request, res = response) => {
 const usuariosPut = async (req = request, res = response) => {
 
     const { id } = req.params;
-    const { nombre, correo, password, predeterminado, envio } = req.body;
+    const { nombre, correo, password, predeterminado, envio, estado, oldCorreo } = req.body;
 
-    //Validar el usuario a modificar respecto el usuario que viene en el JWT
-    if (id !== req.uid) {
+    //Validar el usuario a modificar respecto el usuario que viene en el JWT o es un Administrador
+    if (id !== req.uid && req.rol !== "ADMIN_ROLE") {
         return res.status(401).json({
             ok: false,
             msg: 'No tiene privilegios para editar este usuario'
         });
+    }
+
+    if (correo) {
+        const checkCorreo = await Usuario.findOne({ "correo": correo });
+        if (checkCorreo && oldCorreo !== correo) {
+            return res.status(401).json({
+                ok: false,
+                msg: 'El correo ya existe en la base da datos'
+            });
+        }
     }
 
     // Encriptar la contraseña
@@ -82,7 +92,7 @@ const usuariosPut = async (req = request, res = response) => {
     }
 
     // Actualizar la base de datos
-    const usuario = await Usuario.findByIdAndUpdate(id, { nombre, correo, password: newPassword, predeterminado, envio }, { new: true });
+    const usuario = await Usuario.findByIdAndUpdate(id, { nombre, correo, password: newPassword, predeterminado, envio, estado }, { new: true });
 
     res.json(usuario);
 }
@@ -90,14 +100,6 @@ const usuariosPut = async (req = request, res = response) => {
 const usuariosDelete = async (req = request, res = response) => {
 
     const { id } = req.params;
-
-    //Validar el usuario a eliminar respecto el usuario que viene en el JWT
-    if (id !== req.uid) {
-        return res.status(401).json({
-            ok: false,
-            msg: 'No tiene privilegios para eliminar este usuario'
-        });
-    }
 
     // Borrado fisico
     // const usuario = await Usuario.findByIdAndDelete(id);

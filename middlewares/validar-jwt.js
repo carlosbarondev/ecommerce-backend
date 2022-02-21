@@ -17,7 +17,7 @@ const validarJWT = async (req = request, res = response, next) => {
 
     try {
 
-        const { uid, nombre, correo } = jwt.verify(token, process.env.SECRETORPRIVATEKEY); // Si falla dispara el catch y no ejecuta el next()
+        const { uid, nombre, correo, rol, estado } = jwt.verify(token, process.env.SECRETORPRIVATEKEY); // Si falla dispara el catch y no ejecuta el next()
 
         // Leer el usuario que corresponde al uid
         const usuario = await Usuario.findById(uid);
@@ -39,6 +39,8 @@ const validarJWT = async (req = request, res = response, next) => {
         req.uid = uid;
         req.nombre = nombre;
         req.correo = correo;
+        req.rol = rol;
+        req.estado = estado;
 
         next();
 
