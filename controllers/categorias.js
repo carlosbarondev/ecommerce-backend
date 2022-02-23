@@ -6,12 +6,12 @@ const { Categoria, Subcategoria } = require('../models/categoria');
 // obtenerCategorias - paginado - total - populate
 const obtenerCategorias = async (req = request, res = response) => {
 
-    const { desde = 0, limite = 50 } = req.query;
+    const { desde = 0, limite = 50, visibles = `{ "estado": "true" }`, ordenar = "-vendidos" } = req.query;
 
     const [total, categorias] = await Promise.all([
-        Categoria.countDocuments(),
-        Categoria.find()
-            .sort("-vendidos")
+        Categoria.countDocuments(JSON.parse(visibles)),
+        Categoria.find(JSON.parse(visibles))
+            .sort(ordenar)
             .skip(Number(desde))
             .limit(Number(limite))
             .populate("subcategorias", "nombre productos")
@@ -37,6 +37,7 @@ const obtenerCategoria = async (req = request, res = response) => {
     }
 
     const categoria = await Categoria.findOne(query)
+        .collation({ locale: "es", strength: 1 })
         .populate("subcategorias");
 
     res.json({
@@ -57,6 +58,7 @@ const obtenerSubCategoria = async (req = request, res = response) => {
     }
 
     const subcategoria = await Subcategoria.findOne(query)
+        .collation({ locale: "es", strength: 1 })
         .populate({
             path: 'productos',
             populate: { path: 'categoria subcategoria' },
@@ -110,14 +112,13 @@ const crearCategoria = async (req, res = response) => {
 const actualizarCategoria = async (req = request, res = response) => {
 
     const { id } = req.params;
-    const { nombre, subcategorias, vendidos = 0 } = req.body;
+    const { nombre, subcategorias, estado } = req.body;
 
-    if (nombre) { // Si recibe el nombre se actualiza el nombre de la Categoria
-        await Categoria.findByIdAndUpdate(id, { "nombre": nombre, $inc: { "vendidos": vendidos } });
-    }
+    // Si recibe el nombre se actualiza el nombre y estado de la Categoria
+    const categoria = await Categoria.findByIdAndUpdate(id, { "nombre": nombre, "estado": estado }, { new: true })
+        .populate("subcategorias");
 
-    let categoria;
-
+    /*
     const categoriaBuscar = await Categoria.findOne({ "_id": id })
         .populate("subcategorias", "nombre productos");
 
@@ -144,11 +145,53 @@ const actualizarCategoria = async (req = request, res = response) => {
             categoria = await Categoria.findByIdAndUpdate(id, { $push: { "subcategorias": newsub } }, { new: true }); // new Devuelve la respuesta actualizada
 
         }
-    }
+    }*/
 
-    res.json({
+    res.json(
         categoria
-    });
+    );
+}
+
+const actualizarSubCategoria = async (req = request, res = response) => {
+
+    const { id } = req.params;
+    const { nombre, estado } = req.body;
+
+    // Si recibe el nombre se actualiza el nombre y estado de la Categoria
+    const subcategoria = await Subcategoria.findByIdAndUpdate(id, { "nombre": nombre, "estado": estado }, { new: true });
+
+    /*
+    const categoriaBuscar = await Categoria.findOne({ "_id": id })
+        .populate("subcategorias", "nombre productos");
+
+    for (const sub of subcategorias) {
+
+        const existeSubCategoria = categoriaBuscar.subcategorias.find(element => element.nombre === sub.nombre);
+
+        if (existeSubCategoria) { // Si existe la Subcategoria se actualiza
+
+            categoria = await Subcategoria.findOneAndUpdate({ "nombre": sub.nombre },
+                { $push: { "productos": sub.productos } },
+                { new: true }
+            );
+
+        } else { // Si NO existe la Subcategoria se crea y se añade a la Categoria
+
+            const newsub = new Subcategoria({
+                nombre: sub.nombre,
+                productos: sub.productos
+            });
+
+            await newsub.save(); // Guardar Subcategoria en la base de datos
+
+            categoria = await Categoria.findByIdAndUpdate(id, { $push: { "subcategorias": newsub } }, { new: true }); // new Devuelve la respuesta actualizada
+
+        }
+    }*/
+
+    res.json(
+        subcategoria
+    );
 }
 
 // borrarCategoria - estado: false
@@ -156,23 +199,53 @@ const borrarCategoria = async (req = request, res = response) => {
 
     const { id } = req.params;
 
-    // Borrado fisico
+    // // Borrado fisico
 
-    const categoria = await Categoria.findById(id);
+    // const categoria = await Categoria.findById(id);
 
-    for (const sub of categoria.subcategorias) { //Borrar Subcategorias de la Categoria
-        await Subcategoria.findByIdAndDelete(sub._id);
-    }
+    // // Borrar Subcategorias de la Categoria
 
-    const categoriaBorrada = await Categoria.findByIdAndDelete(id); // Borrar la Categoria
+    // for (const sub of categoria.subcategorias) {
+    //     await Subcategoria.findByIdAndDelete(sub._id);
+    // }
+
+    // // Borrar la Categoria
+    // const categoriaBorrada = await Categoria.findByIdAndDelete(id);
 
     // Borrado lógico
 
-    // const categoriaBorrada = await Categoria.findByIdAndUpdate(id, { estado: false }, { new: true });
+    const categoriaBorrada = await Categoria.findByIdAndUpdate(id, { estado: false }, { new: true })
+        .populate("subcategorias");
 
-    res.json({
+    res.json(
         categoriaBorrada
-    });
+    );
+}
+
+const borrarSubCategoria = async (req = request, res = response) => {
+
+    const { id } = req.params;
+
+    // // Borrado fisico
+
+    // const categoria = await Categoria.findById(id);
+
+    // // Borrar Subcategorias de la Categoria
+
+    // for (const sub of categoria.subcategorias) {
+    //     await Subcategoria.findByIdAndDelete(sub._id);
+    // }
+
+    // // Borrar la Categoria
+    // const categoriaBorrada = await Categoria.findByIdAndDelete(id);
+
+    // Borrado lógico
+
+    const subcategoriaBorrada = await Subcategoria.findByIdAndUpdate(id, { estado: false }, { new: true });
+
+    res.json(
+        subcategoriaBorrada
+    );
 }
 
 module.exports = {
@@ -181,5 +254,7 @@ module.exports = {
     obtenerSubCategoria,
     crearCategoria,
     actualizarCategoria,
-    borrarCategoria
+    actualizarSubCategoria,
+    borrarCategoria,
+    borrarSubCategoria
 }

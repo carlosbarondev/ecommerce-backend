@@ -15,6 +15,10 @@ const SubcategoriaSchema = Schema({
     img: {
         type: String
     },
+    estado: {
+        type: Boolean,
+        default: true
+    },
 });
 
 const CategoriaSchema = Schema({
@@ -35,7 +39,11 @@ const CategoriaSchema = Schema({
     vendidos: {
         type: Number,
         default: 0
-    }
+    },
+    estado: {
+        type: Boolean,
+        default: true
+    },
 });
 
 const Subcategoria = model('Subcategoria', SubcategoriaSchema);

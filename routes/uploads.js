@@ -19,9 +19,9 @@ router.get('/:coleccion/:id', [
 
 router.put('/:coleccion/:id', [
     validarJWT,
-    validarArchivoSubir,
     check('id', 'El id no es valido').isMongoId(),
     check('coleccion').custom(c => coleccionesPermitidas(c, ['usuarios', 'productos', 'categorias', 'subcategorias'])),
+    validarArchivoSubir,
     validarCampos
 ], actualizarImagenCloudinary);
 

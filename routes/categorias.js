@@ -3,7 +3,8 @@ const { check } = require('express-validator');
 
 const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
-const { existeCategoriaPorId } = require('../middlewares/validar-db');
+const { existeCategoriaPorId, existeSubCategoriaPorId } = require('../middlewares/validar-db');
+const { checkAdmin } = require('../middlewares/validar-roles');
 
 const {
     obtenerCategorias,
@@ -11,7 +12,9 @@ const {
     crearCategoria,
     actualizarCategoria,
     borrarCategoria,
-    obtenerSubCategoria
+    obtenerSubCategoria,
+    actualizarSubCategoria,
+    borrarSubCategoria
 } = require('../controllers/categorias');
 
 const router = Router();
@@ -36,6 +39,7 @@ router.get('/subcategoria/:id', [
 // Crear categoria - privado - cualquier persona con un token válido
 router.post('/', [
     validarJWT,
+    checkAdmin,
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
     validarCampos
 ], crearCategoria);
@@ -43,17 +47,35 @@ router.post('/', [
 // Actualizar - privado - cualquier persona con un token válido
 router.put('/:id', [
     validarJWT,
-    check('id', 'El id no es valido').isMongoId(),
+    checkAdmin,
+    check('id', 'El id no es válido').isMongoId(),
     check('id').custom(existeCategoriaPorId),
     validarCampos
 ], actualizarCategoria);
 
+router.put('/subcategoria/:id', [
+    validarJWT,
+    checkAdmin,
+    check('id', 'El id no es válido').isMongoId(),
+    check('id').custom(existeSubCategoriaPorId),
+    validarCampos
+], actualizarSubCategoria);
+
 // Borrar una categoria - Admin
 router.delete('/:id', [
     validarJWT,
+    checkAdmin,
     check('id', 'El id no es valido').isMongoId(),
     check('id').custom(existeCategoriaPorId),
     validarCampos
 ], borrarCategoria);
+
+router.delete('/subcategoria/:id', [
+    validarJWT,
+    checkAdmin,
+    check('id', 'El id no es válido').isMongoId(),
+    check('id').custom(existeSubCategoriaPorId),
+    validarCampos
+], borrarSubCategoria);
 
 module.exports = router;

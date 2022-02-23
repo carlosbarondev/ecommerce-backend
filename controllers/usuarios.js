@@ -6,12 +6,13 @@ const Producto = require('../models/producto');
 
 const usuariosGet = async (req = request, res = response) => {
 
-    const { limite = 5, desde = 0 } = req.query;
-    // const query = { estado: true }
+    const { limite = 50, desde = 0, rol = "USER_ROLE" } = req.query;
+
+    const query = { rol }
 
     const [total, usuarios] = await Promise.all([
-        Usuario.countDocuments(),
-        Usuario.find()
+        Usuario.countDocuments(query),
+        Usuario.find(query)
             .skip(Number(desde))
             .limit(Number(limite))
     ]);

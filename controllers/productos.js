@@ -40,6 +40,7 @@ const obtenerProducto = async (req = request, res = response) => {
     }
 
     const producto = await Producto.findOne(query)
+        .collation({ locale: "es", strength: 1 })
         .populate("categoria subcategoria opinion.usuario");
 
     if (producto) {
@@ -65,6 +66,7 @@ const obtenerMejorProductoCategoria = async (req = request, res = response) => {
 
     try {
         const producto = Producto.find()
+            .collation({ locale: "es", strength: 1 })
             .sort(ordenar)
             .populate("subcategoria")
             .populate({ path: 'categoria', match: { "nombre": categoria } })

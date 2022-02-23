@@ -63,84 +63,90 @@ const mostrarImagen = async (req, res = response) => {
 
 const actualizarImagenCloudinary = async (req, res = response) => {
 
-    const { id, coleccion } = req.params;
+    try {
 
-    let modelo;
+        const { id, coleccion } = req.params;
 
-    switch (coleccion) {
+        let modelo;
 
-        case 'usuarios':
+        switch (coleccion) {
 
-            modelo = await Usuario.findById(id);
-            if (!modelo) {
-                return res.status(400).json({
-                    msg: `No existe un usuario con el id ${id}`
-                });
-            }
+            case 'usuarios':
 
-            //Validar el usuario a modificar respecto el usuario que viene en el JWT
-            if (id !== req.uid) {
-                return res.status(401).json({
-                    ok: false,
-                    msg: 'No tiene privilegios para editar este usuario'
-                });
-            }
+                modelo = await Usuario.findById(id);
+                if (!modelo) {
+                    return res.status(400).json({
+                        msg: `No existe un usuario con el id ${id}`
+                    });
+                }
 
-            break;
+                //Validar el usuario a modificar respecto el usuario que viene en el JWT
+                if (id !== req.uid) {
+                    return res.status(401).json({
+                        ok: false,
+                        msg: 'No tiene privilegios para editar este usuario'
+                    });
+                }
 
-        case 'productos':
+                break;
 
-            modelo = await Producto.findById(id);
-            if (!modelo) {
-                return res.status(400).json({
-                    msg: `No existe un producto con el id ${id}`
-                });
-            }
+            case 'productos':
 
-            break;
+                modelo = await Producto.findById(id);
+                if (!modelo) {
+                    return res.status(400).json({
+                        msg: `No existe un producto con el id ${id}`
+                    });
+                }
 
-        case 'categorias':
+                break;
 
-            modelo = await Categoria.findById(id);
-            if (!modelo) {
-                return res.status(400).json({
-                    msg: `No existe una categoria con el id ${id}`
-                });
-            }
+            case 'categorias':
 
-            break;
+                modelo = await Categoria.findById(id).populate("subcategorias");
+                if (!modelo) {
+                    return res.status(400).json({
+                        msg: `No existe una categoria con el id ${id}`
+                    });
+                }
 
-        case 'subcategorias':
+                break;
 
-            modelo = await Subcategoria.findById(id);
-            if (!modelo) {
-                return res.status(400).json({
-                    msg: `No existe una subcategoria con el id ${id}`
-                });
-            }
+            case 'subcategorias':
 
-            break;
+                modelo = await Subcategoria.findById(id);
+                if (!modelo) {
+                    return res.status(400).json({
+                        msg: `No existe una subcategoria con el id ${id}`
+                    });
+                }
 
-        default:
-            return res.status(500).json({ msg: 'Se me olvidó validar esto' });
+                break;
+
+            default:
+                return res.status(500).json({ msg: 'Se me olvidó validar esto' });
+        }
+
+        // Limpiar imágenes previas
+        if (modelo.img) {
+            // Hay que borrar la imagen del servidor
+            const nombreArr = modelo.img.split('/');
+            const nombre = nombreArr[nombreArr.length - 1];
+            const [public_id] = nombre.split('.');
+            cloudinary.uploader.destroy(`ecommerce/${coleccion}/${public_id}`);
+        }
+
+        const { tempFilePath } = req.files.archivo;
+        const { secure_url } = await cloudinary.uploader.upload(tempFilePath, { folder: `ecommerce/${coleccion}` });
+        modelo.img = secure_url;
+
+        await modelo.save();
+
+        res.json(modelo);
+
+    } catch (error) {
+        return res.status(500).json({ msg: error.message });
     }
-
-    // Limpiar imágenes previas
-    if (modelo.img) {
-        // Hay que borrar la imagen del servidor
-        const nombreArr = modelo.img.split('/');
-        const nombre = nombreArr[nombreArr.length - 1];
-        const [public_id] = nombre.split('.');
-        cloudinary.uploader.destroy(`ecommerce/${coleccion}/${public_id}`);
-    }
-
-    const { tempFilePath } = req.files.archivo;
-    const { secure_url } = await cloudinary.uploader.upload(tempFilePath, { folder: `ecommerce/${coleccion}` });
-    modelo.img = secure_url;
-
-    await modelo.save();
-
-    res.json(modelo);
 
 }
 
