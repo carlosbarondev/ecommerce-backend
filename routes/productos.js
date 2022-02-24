@@ -3,12 +3,13 @@ const { check } = require('express-validator');
 
 const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
-const { existeProductoPorId, categoriaExiste, productoExiste, existeUsuarioPorId } = require('../middlewares/validar-db');
+const { existeProductoPorId, categoriaExiste, productoExiste, existeUsuarioPorId, subcategoriaExiste } = require('../middlewares/validar-db');
+const { checkAdmin } = require('../middlewares/validar-roles');
 
 const {
     obtenerProductos,
     obtenerProducto,
-    obtenerMejorProductoCategoria,
+    obtenerMejoresProductosCategoria,
     crearProducto,
     actualizarProducto,
     borrarProducto,
@@ -29,11 +30,7 @@ router.get('/producto/:id', [
     validarCampos
 ], obtenerProducto);
 
-router.get('/mejor', [
-    //check('id', 'El id no es valido').isMongoId(),
-    //check('id').custom(existeProductoPorId),
-    validarCampos
-], obtenerMejorProductoCategoria);
+router.get('/mejor', obtenerMejoresProductosCategoria);
 
 // Crear producto - privado - cualquier persona con un token válido
 router.post('/', [
@@ -43,14 +40,16 @@ router.post('/', [
     check('descripcion', 'La descripcion es obligatoria').not().isEmpty(),
     check('precio', 'El precio es obligatorio').not().isEmpty(),
     check('stock', 'El stock es obligatorio').not().isEmpty(),
-    check('categoria').custom(categoriaExiste),
+    // check('categoria').custom(categoriaExiste),
+    // check('subcategoria').custom(subcategoriaExiste),
     validarCampos
 ], crearProducto);
 
 // Actualizar - privado - cualquier persona con un token válido
 router.put('/:id', [
     validarJWT,
-    check('id', 'El id no es valido').isMongoId(),
+    checkAdmin,
+    check('id', 'El id no es válido').isMongoId(),
     check('id').custom(existeProductoPorId),
     validarCampos
 ], actualizarProducto);
@@ -58,7 +57,8 @@ router.put('/:id', [
 // Borrar un producto - Admin
 router.delete('/:id', [
     validarJWT,
-    check('id', 'El id no es valido').isMongoId(),
+    checkAdmin,
+    check('id', 'El id no es válido').isMongoId(),
     check('id').custom(existeProductoPorId),
     validarCampos
 ], borrarProducto);

@@ -14,7 +14,8 @@ const {
     borrarCategoria,
     obtenerSubCategoria,
     actualizarSubCategoria,
-    borrarSubCategoria
+    borrarSubCategoria,
+    crearSubCategoria
 } = require('../controllers/categorias');
 
 const router = Router();
@@ -43,6 +44,13 @@ router.post('/', [
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
     validarCampos
 ], crearCategoria);
+
+router.post('/subcategoria', [
+    validarJWT,
+    checkAdmin,
+    check('nombre', 'El nombre es obligatorio').not().isEmpty(),
+    validarCampos
+], crearSubCategoria);
 
 // Actualizar - privado - cualquier persona con un token válido
 router.put('/:id', [

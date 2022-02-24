@@ -9,15 +9,24 @@ const Pedido = require("../models/pedido");
 // obtenerProductos - paginado - total - populate
 const obtenerProductos = async (req = request, res = response) => {
 
-    const { desde = 0, limite = 50, ordenar = "-rating" } = req.query;
+    const { desde = 0, limite = 50, visibles = `{ "estado": "true" }`, ordenar = "-rating" } = req.query;
 
     const [total, productos] = await Promise.all([
-        Producto.countDocuments(),
-        Producto.find()
+        Producto.countDocuments(JSON.parse(visibles)),
+        Producto.find(JSON.parse(visibles))
             .sort(ordenar)
             .skip(Number(desde))
             .limit(Number(limite))
-            .populate("categoria subcategoria")
+            .populate([
+                {
+                    path: 'categoria',
+                    match: { "estado": true }
+                },
+                {
+                    path: 'subcategoria',
+                    match: { "estado": true }
+                }
+            ])
     ]);
 
     res.json({
@@ -60,25 +69,38 @@ const obtenerProducto = async (req = request, res = response) => {
     });
 }
 
-const obtenerMejorProductoCategoria = async (req = request, res = response) => {
+const obtenerMejoresProductosCategoria = async (req = request, res = response) => {
 
-    const { desde = 0, limite = 50, categoria, ordenar = "-vendido" } = req.query;
+    const { desde = 0, limite = 50, visibles = `{ "estado": "true" }`, categoria, ordenar = "-vendido" } = req.query;
 
     try {
-        const producto = Producto.find()
-            .collation({ locale: "es", strength: 1 })
-            .sort(ordenar)
-            .populate("subcategoria")
-            .populate({ path: 'categoria', match: { "nombre": categoria } })
-            .exec(function (error, prod) {
-                if (error) {
-                    return console.log(error);
-                }
 
-                res.json({
-                    productos: prod.filter(p => p.categoria !== null)
-                });
-            });
+        await Promise.all([
+            Producto.find(JSON.parse(visibles))
+                .collation({ locale: "es", strength: 1 })
+                .sort(ordenar)
+                .skip(Number(desde))
+                .limit(Number(limite))
+                .populate([
+                    {
+                        path: 'categoria',
+                        match: { "nombre": categoria, "estado": true }
+                    },
+                    {
+                        path: 'subcategoria',
+                        match: { "estado": true }
+                    }
+                ])
+                .exec(function (error, prod) {
+                    if (error) {
+                        return console.log(error);
+                    }
+
+                    res.json({
+                        productos: prod.filter(p => p.categoria !== null)
+                    });
+                })
+        ]);
 
     } catch (error) {
         console.log(error);
@@ -89,6 +111,28 @@ const obtenerMejorProductoCategoria = async (req = request, res = response) => {
 
 }
 
+const crearProducto = async (req, res = response) => {
+
+    const { nombre, descripcion, precio, stock, categoria, subcategoria } = req.body;
+
+    const productoDB = await Producto.findOne({ nombre });
+
+    if (productoDB) {
+        return res.status(400).json({
+            msg: `El producto ${productoDB.nombre}, ya existe`
+        });
+    }
+
+    const producto = new Producto({ nombre, descripcion, precio, stock, categoria, subcategoria });
+
+    // Guardar en la base de datos
+    await producto.save();
+
+    res.status(201).json(producto);
+
+};
+
+/*
 const crearProducto = async (req, res = response) => {
 
     const { nombre, descripcion, precio, stock, img, categoria, subcategoria } = req.body;
@@ -125,15 +169,15 @@ const crearProducto = async (req, res = response) => {
             res.status(201).json(producto);
         });
 
-}
+}*/
 
 // actualizarProducto nombre
 const actualizarProducto = async (req = request, res = response) => {
 
     const { id } = req.params;
-    const { nombre, descripcion, precio, stock, img, categoria } = req.body;
+    const { nombre, descripcion, precio, stock, img, categoria, estado } = req.body;
 
-    const producto = await Producto.findByIdAndUpdate(id, { nombre: nombre, descripcion, precio, stock, img, categoria, usuario: req.usuario._id }, { new: true }); // new devuelve la respuesta actualizada
+    const producto = await Producto.findByIdAndUpdate(id, { nombre: nombre, descripcion, precio, stock, img, categoria, usuario: req.usuario._id, estado }, { new: true }); // new devuelve la respuesta actualizada
 
     res.json(producto);
 }
@@ -229,7 +273,7 @@ const borrarComentarioProducto = async (req = request, res = response) => {
 module.exports = {
     obtenerProductos,
     obtenerProducto,
-    obtenerMejorProductoCategoria,
+    obtenerMejoresProductosCategoria,
     crearProducto,
     actualizarProducto,
     borrarProducto,
