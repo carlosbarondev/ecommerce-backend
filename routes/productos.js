@@ -3,7 +3,7 @@ const { check } = require('express-validator');
 
 const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
-const { existeProductoPorId, categoriaExiste, productoExiste, existeUsuarioPorId, subcategoriaExiste } = require('../middlewares/validar-db');
+const { existeProductoPorId, productoExiste, existeUsuarioPorId, existeCategoriaPorId, existeSubCategoriaPorId } = require('../middlewares/validar-db');
 const { checkAdmin } = require('../middlewares/validar-roles');
 
 const {
@@ -40,8 +40,8 @@ router.post('/', [
     check('descripcion', 'La descripcion es obligatoria').not().isEmpty(),
     check('precio', 'El precio es obligatorio').not().isEmpty(),
     check('stock', 'El stock es obligatorio').not().isEmpty(),
-    // check('categoria').custom(categoriaExiste),
-    // check('subcategoria').custom(subcategoriaExiste),
+    check('categoria').custom(existeCategoriaPorId),
+    check('subcategoria').custom(existeSubCategoriaPorId),
     validarCampos
 ], crearProducto);
 

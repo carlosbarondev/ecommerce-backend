@@ -115,18 +115,13 @@ const crearProducto = async (req, res = response) => {
 
     const { nombre, descripcion, precio, stock, categoria, subcategoria } = req.body;
 
-    const productoDB = await Producto.findOne({ nombre });
-
-    if (productoDB) {
-        return res.status(400).json({
-            msg: `El producto ${productoDB.nombre}, ya existe`
-        });
-    }
-
     const producto = new Producto({ nombre, descripcion, precio, stock, categoria, subcategoria });
 
     // Guardar en la base de datos
     await producto.save();
+
+    // Actualiza el campo Productos de la Subcategoria
+    await Subcategoria.findByIdAndUpdate(subcategoria, { "$push": { "productos": producto._id } }, { new: true });
 
     res.status(201).json(producto);
 

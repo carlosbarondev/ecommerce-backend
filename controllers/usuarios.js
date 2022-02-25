@@ -326,7 +326,10 @@ const usuariosDeseosDelete = async (req = request, res = response) => {
 
     // Borrado fisico
     const usuario = await Usuario.findOneAndUpdate({ "_id": id }, { $pull: { deseos: { "$in": ids } } }, { new: true })
-        .populate("deseos");
+        .populate({
+            path: 'deseos',
+            populate: { path: 'categoria subcategoria' },
+        });
 
     res.json({
         usuario
