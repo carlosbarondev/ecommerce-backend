@@ -50,7 +50,11 @@ const obtenerProducto = async (req = request, res = response) => {
 
     const producto = await Producto.findOne(query)
         .collation({ locale: "es", strength: 1 })
-        .populate("categoria subcategoria opinion.usuario");
+        .populate("categoria subcategoria opinion.usuario")
+        .populate({
+            path: 'categoria',
+            populate: { path: 'subcategorias', match: { "estado": true } },
+        })
 
     if (producto) {
         if (producto.length === 0) {
@@ -170,9 +174,16 @@ const crearProducto = async (req, res = response) => {
 const actualizarProducto = async (req = request, res = response) => {
 
     const { id } = req.params;
-    const { nombre, descripcion, precio, stock, img, categoria, estado } = req.body;
+    const { nombre, descripcion, precio, stock, img, categoria, subcategoria, oldSubcategoria, estado } = req.body;
 
-    const producto = await Producto.findByIdAndUpdate(id, { nombre: nombre, descripcion, precio, stock, img, categoria, usuario: req.usuario._id, estado }, { new: true }); // new devuelve la respuesta actualizada
+    const producto = await Producto.findByIdAndUpdate(id, { nombre, descripcion, precio, stock, img, categoria, subcategoria, estado }, { new: true }); // new devuelve la respuesta actualizada
+
+    if (subcategoria) {
+        // Actualiza el campo Productos de la Subcategoria anterior
+        await Subcategoria.findByIdAndUpdate(oldSubcategoria, { "$pull": { "productos": producto._id } }, { new: true });
+        // Actualiza el campo Productos de la Subcategoria nueva
+        await Subcategoria.findByIdAndUpdate(subcategoria, { "$push": { "productos": producto._id } }, { new: true });
+    }
 
     res.json(producto);
 }
