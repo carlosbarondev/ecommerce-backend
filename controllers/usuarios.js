@@ -3,6 +3,11 @@ const bcryptjs = require('bcryptjs');
 
 const Usuario = require('../models/usuario');
 const Producto = require('../models/producto');
+const { generarJWT } = require('../helpers/generar-jwt');
+
+const cloudinary = require('cloudinary').v2
+cloudinary.config(process.env.CLOUDINARY_URL);
+
 
 const usuariosGet = async (req = request, res = response) => {
 
@@ -63,7 +68,7 @@ const usuariosPost = async (req = request, res = response) => {
 const usuariosPut = async (req = request, res = response) => {
 
     const { id } = req.params;
-    const { nombre, correo, password, predeterminado, envio, estado, oldCorreo } = req.body;
+    const { nombre, correo, password, predeterminado, envio, estado, oldCorreo, img } = req.body;
 
     //Validar el usuario a modificar respecto el usuario que viene en el JWT o es un Administrador
     if (id !== req.uid && req.rol !== "ADMIN_ROLE") {
@@ -92,8 +97,26 @@ const usuariosPut = async (req = request, res = response) => {
         newPassword = bcryptjs.hashSync(password, salt);
     }
 
+    // Borrar la imagen de la nube
+    if (img === "") {
+        const checkImg = await Usuario.findById(id);
+        const nombreArr = checkImg.img.split('/');
+        const nombre = nombreArr[nombreArr.length - 1];
+        const [public_id] = nombre.split('.');
+        cloudinary.uploader.destroy(`ecommerce/usuarios/${public_id}`);
+    }
+
     // Actualizar la base de datos
-    const usuario = await Usuario.findByIdAndUpdate(id, { nombre, correo, password: newPassword, predeterminado, envio, estado }, { new: true });
+    const usuario = await Usuario.findByIdAndUpdate(id, { nombre, correo, password: newPassword, predeterminado, envio, estado, img }, { new: true });
+
+    // Actualizar el token del usuario en su navegador para sincronizar los datos correctamente
+    if (req.rol === "USER_ROLE") {
+        const token = await generarJWT(usuario._id, usuario.nombre, usuario.correo, usuario.rol, usuario.img, usuario.estado);
+        return res.json({
+            usuario,
+            token
+        });
+    }
 
     res.json(usuario);
 }
