@@ -11,7 +11,19 @@ const PedidoSchema = Schema({
         ref: 'Usuario',
         required: [true, 'El usuario es obligatorio']
     },
-    producto: [],
+    producto: [
+        {
+            unidades: {
+                type: Number,
+                required: [true, 'El número de unidades es obligatorio'],
+            },
+            producto: {
+                type: Schema.Types.ObjectId,
+                ref: 'Producto',
+                required: [true, 'El producto es obligatorio']
+            }
+        }
+    ],
     fecha: {
         type: Date,
         required: [true, 'La fecha es obligatoria'],

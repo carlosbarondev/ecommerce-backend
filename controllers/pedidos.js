@@ -21,6 +21,15 @@ const obtenerPedidosUsuario = async (req = request, res = response) => {
     const [total, pedidos] = await Promise.all([
         Pedido.countDocuments(query),
         Pedido.find(query)
+            .populate({
+                path: 'producto',
+                populate: {
+                    path: 'producto',
+                    populate: {
+                        path: 'categoria subcategoria'
+                    }
+                },
+            })
         // .skip(Number(desde))
         // .limit(Number(limite))
     ]);
@@ -58,7 +67,19 @@ const crearPedido = async (req, res = response) => {
     // Guardar en la base de datos
     await pedido.save();
 
-    res.status(201).json(pedido);
+    const pedidoEnviar = await Pedido.findById(pedido._id)
+        .populate({
+            path: 'producto',
+            populate: {
+                path: 'producto',
+                populate: {
+                    path: 'categoria subcategoria'
+                }
+            },
+        })
+
+
+    res.status(201).json(pedidoEnviar);
 
 }
 /*
