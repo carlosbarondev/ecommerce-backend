@@ -68,7 +68,7 @@ class Server {
 
     listen() {
         this.app.listen(this.port, () => {
-            console.log(`Servidor escuchando peticiones en: http://localhost:${this.port}`)
+            console.log(`Servidor escuchando peticiones en ${this.port}`);
         });
     }
 }
