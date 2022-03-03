@@ -3,7 +3,7 @@ const { Categoria } = require("../models/categoria");
 const Producto = require('../models/producto');
 
 // This is your test secret API key.
-const stripe = require("stripe")('sk_test_51JjACUBNBMvlMZgl5cp6YRDwCft9FDz0LRSmSMI1VH3T3iVROPEucjmcab8zCxIKMN05cm1GOeqfkEtorXkxqn4R00PucrBI4X');
+const stripe = require("stripe")('sk_test_51KZH9rK7t3f78Hp2Sj9HgTLXEEyWS96I0oFhlwdwoxgKyXozBrLc1cISNpRFfcGdd1b9I8Vj5vm3fGqQsAXtZQPu002SQ6SeCA');
 
 
 const calculateOrderAmount = (items) => {
