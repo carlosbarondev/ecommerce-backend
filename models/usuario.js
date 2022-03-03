@@ -78,6 +78,10 @@ const UsuarioSchema = Schema({
         type: Boolean,
         default: true
     },
+    desactivar: {
+        type: Boolean,
+        default: true
+    }
     /*google: {
         type: Boolean,
         default: false

@@ -45,6 +45,10 @@ const ProductoSchema = Schema({
         type: Boolean,
         default: true
     },
+    desactivar: {
+        type: Boolean,
+        default: true
+    },
     opinion: [
         {
             titulo: {

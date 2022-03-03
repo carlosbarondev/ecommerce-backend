@@ -20,6 +20,10 @@ const SubcategoriaSchema = Schema({
         type: Boolean,
         default: true
     },
+    desactivar: {
+        type: Boolean,
+        default: true
+    }
 });
 
 
@@ -46,6 +50,10 @@ const CategoriaSchema = Schema({
         type: Boolean,
         default: true
     },
+    desactivar: {
+        type: Boolean,
+        default: true
+    }
 });
 
 
