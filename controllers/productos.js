@@ -223,7 +223,7 @@ const obtenerComentarioProducto = async (req = request, res = response) => {
     const noValorados = [];
 
     for (const producto of productosSinOpinionUsuario) {
-        const pedidos = await Pedido.find({ "usuario": id, "producto.producto.nombre": producto.nombre });
+        const pedidos = await Pedido.find({ "usuario": id, "producto.producto": { $in: [producto._id] } });
         if (pedidos.length > 0) {
             noValorados.push(producto)
         }
