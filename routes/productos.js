@@ -3,7 +3,7 @@ const { check } = require('express-validator');
 
 const { validarCampos } = require('../middlewares/validar-campos');
 const { validarJWT } = require('../middlewares/validar-jwt');
-const { existeProductoPorId, productoExiste, existeUsuarioPorId, existeCategoriaPorId, existeSubCategoriaPorId } = require('../middlewares/validar-db');
+const { existeProductoPorId, existeUsuarioPorId, existeCategoriaPorId, existeSubCategoriaPorId } = require('../middlewares/validar-db');
 const { checkAdmin } = require('../middlewares/validar-roles');
 
 const {
@@ -20,10 +20,9 @@ const {
 
 const router = Router();
 
-// Obtener todas los productos - publico
+
 router.get('/', obtenerProductos);
 
-// Obtener un producto por id - publico
 router.get('/producto/:id', [
     //check('id', 'El id no es valido').isMongoId(),
     //check('id').custom(existeProductoPorId),
@@ -32,11 +31,9 @@ router.get('/producto/:id', [
 
 router.get('/mejor', obtenerMejoresProductosCategoria);
 
-// Crear producto - privado - cualquier persona con un token válido
 router.post('/', [
     validarJWT,
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-    check('nombre').custom(productoExiste),
     check('descripcion', 'La descripcion es obligatoria').not().isEmpty(),
     check('precio', 'El precio es obligatorio').not().isEmpty(),
     check('stock', 'El stock es obligatorio').not().isEmpty(),
@@ -45,7 +42,6 @@ router.post('/', [
     validarCampos
 ], crearProducto);
 
-// Actualizar - privado - cualquier persona con un token válido
 router.put('/:id', [
     validarJWT,
     checkAdmin,
@@ -54,7 +50,6 @@ router.put('/:id', [
     validarCampos
 ], actualizarProducto);
 
-// Borrar un producto - Admin
 router.delete('/:id', [
     validarJWT,
     checkAdmin,
@@ -63,7 +58,6 @@ router.delete('/:id', [
     validarCampos
 ], borrarProducto);
 
-// Obtener un producto por id - publico
 router.get('/valoraciones/:id', [
     validarJWT,
     check('id', 'El id no es valido').isMongoId(),
@@ -71,7 +65,6 @@ router.get('/valoraciones/:id', [
     validarCampos
 ], obtenerComentarioProducto);
 
-// Crear comentario producto - privado - cualquier persona con un token válido
 router.post('/:id', [
     validarJWT,
     check('id', 'El id no es valido').isMongoId(),
@@ -91,5 +84,6 @@ router.delete('/valoraciones/:id', [
     check('id').custom(existeUsuarioPorId),
     validarCampos
 ], borrarComentarioProducto);
+
 
 module.exports = router;

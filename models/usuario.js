@@ -28,6 +28,7 @@ const direccion = Schema({
     },
 });
 
+
 const envio = Schema({
     direccion: direccion,
     nombre: {
@@ -39,6 +40,7 @@ const envio = Schema({
         required: [true, 'El telefono es obligatorio']
     },
 });
+
 
 const UsuarioSchema = Schema({
     nombre: {
@@ -82,10 +84,12 @@ const UsuarioSchema = Schema({
     },*/
 });
 
+
 /*UsuarioSchema.methods.toJSON = function () {
     const { __v, password, _id, ...usuario } = this.toObject();
     usuario.uid = _id;
     return usuario;
 }*/
+
 
 module.exports = model('Usuario', UsuarioSchema);

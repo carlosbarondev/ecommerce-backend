@@ -25,4 +25,5 @@ router.put('/:coleccion/:id', [
     validarCampos
 ], actualizarImagenCloudinary);
 
+
 module.exports = router;

@@ -1,5 +1,6 @@
 const { response } = require("express")
 
+
 const checkAdmin = (req, res = response, next) => {
 
     if (!req.usuario) {
@@ -18,6 +19,7 @@ const checkAdmin = (req, res = response, next) => {
 
     next();
 }
+
 
 module.exports = {
     checkAdmin

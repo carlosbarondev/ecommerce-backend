@@ -1,5 +1,6 @@
 const { Schema, model } = require('mongoose');
 
+
 const ProductoSchema = Schema({
     nombre: {
         type: String,
@@ -71,10 +72,12 @@ const ProductoSchema = Schema({
     ]
 });
 
+
 /*ProductoSchema.methods.toJSON = function () {
     const { __v, estado, ...data } = this.toObject();
     return data;
 }*/
+
 
 ProductoSchema.post('findOneAndUpdate', async function (doc) { // Actualiza el rating al insertar opiniones de los usuarios
 
@@ -94,5 +97,6 @@ ProductoSchema.post('findOneAndUpdate', async function (doc) { // Actualiza el r
     doc.save();
 
 });
+
 
 module.exports = model('Producto', ProductoSchema);

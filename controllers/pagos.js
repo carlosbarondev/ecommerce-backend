@@ -66,7 +66,6 @@ const crearPago = async (req, res = response) => {
     // Alternatively, set up a webhook to listen for the payment_intent.succeeded event
     // and attach the PaymentMethod to a new Customer
     let customer;
-    //console.log("yes", direccion.direccion.direccion.poblacion);
 
     try { // Si el cliente ya esta registrado se cargan sus datos
 

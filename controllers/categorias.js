@@ -3,7 +3,6 @@ const { response } = require("express");
 const { Categoria, Subcategoria } = require('../models/categoria');
 
 
-// obtenerCategorias - paginado - total - populate
 const obtenerCategorias = async (req = request, res = response) => {
 
     const { desde = 0, limite = 50, visibles = `{ "estado": "true" }`, ordenar = "-vendidos" } = req.query;
@@ -26,7 +25,6 @@ const obtenerCategorias = async (req = request, res = response) => {
     });
 }
 
-// obtenerCategoria - populate {}
 const obtenerCategoria = async (req = request, res = response) => {
 
     const { id } = req.params;
@@ -123,47 +121,7 @@ const crearSubCategoria = async (req, res = response) => {
     });
 
 }
-/*
-const crearSubCategoria = async (req, res = response) => {
 
-    const { nombre, img, subcategorias } = req.body;
-
-    const categoriaDB = await Categoria.findOne({ nombre: nombre });
-
-    if (categoriaDB) {
-        return res.status(400).json({
-            msg: `La categoria ${categoriaDB.nombre} ya existe`
-        });
-    }
-
-    let newCategories = [];
-
-    for (const sub of subcategorias) {
-        const newsub = new Subcategoria({
-            nombre: sub.nombre,
-            productos: sub.productos
-        });
-        try {
-            await newsub.save(); // Guardar Subcategoria en la base de datos
-        } catch (error) {
-            return res.status(500).json(error);
-        }
-        newCategories.push(newsub);
-    }
-
-    const categoria = new Categoria({
-        nombre: nombre,
-        subcategorias: newCategories
-    });
-
-    // Guardar Categoria en la base de datos
-    await categoria.save();
-
-    res.status(201).json(categoria);
-
-}*/
-
-// actualizarCategoria nombre
 const actualizarCategoria = async (req = request, res = response) => {
 
     const { id } = req.params;
@@ -172,35 +130,6 @@ const actualizarCategoria = async (req = request, res = response) => {
     // Si recibe el nombre se actualiza el nombre y estado de la Categoria
     const categoria = await Categoria.findByIdAndUpdate(id, { "nombre": nombre, "estado": estado }, { new: true })
         .populate("subcategorias");
-
-    /*
-    const categoriaBuscar = await Categoria.findOne({ "_id": id })
-        .populate("subcategorias", "nombre productos");
-
-    for (const sub of subcategorias) {
-
-        const existeSubCategoria = categoriaBuscar.subcategorias.find(element => element.nombre === sub.nombre);
-
-        if (existeSubCategoria) { // Si existe la Subcategoria se actualiza
-
-            categoria = await Subcategoria.findOneAndUpdate({ "nombre": sub.nombre },
-                { $push: { "productos": sub.productos } },
-                { new: true }
-            );
-
-        } else { // Si NO existe la Subcategoria se crea y se añade a la Categoria
-
-            const newsub = new Subcategoria({
-                nombre: sub.nombre,
-                productos: sub.productos
-            });
-
-            await newsub.save(); // Guardar Subcategoria en la base de datos
-
-            categoria = await Categoria.findByIdAndUpdate(id, { $push: { "subcategorias": newsub } }, { new: true }); // new Devuelve la respuesta actualizada
-
-        }
-    }*/
 
     res.json(
         categoria
@@ -214,35 +143,6 @@ const actualizarSubCategoria = async (req = request, res = response) => {
 
     // Si recibe el nombre se actualiza el nombre y estado de la Categoria
     const subcategoria = await Subcategoria.findByIdAndUpdate(id, { "nombre": nombre, "estado": estado }, { new: true });
-
-    /*
-    const categoriaBuscar = await Categoria.findOne({ "_id": id })
-        .populate("subcategorias", "nombre productos");
-
-    for (const sub of subcategorias) {
-
-        const existeSubCategoria = categoriaBuscar.subcategorias.find(element => element.nombre === sub.nombre);
-
-        if (existeSubCategoria) { // Si existe la Subcategoria se actualiza
-
-            categoria = await Subcategoria.findOneAndUpdate({ "nombre": sub.nombre },
-                { $push: { "productos": sub.productos } },
-                { new: true }
-            );
-
-        } else { // Si NO existe la Subcategoria se crea y se añade a la Categoria
-
-            const newsub = new Subcategoria({
-                nombre: sub.nombre,
-                productos: sub.productos
-            });
-
-            await newsub.save(); // Guardar Subcategoria en la base de datos
-
-            categoria = await Categoria.findByIdAndUpdate(id, { $push: { "subcategorias": newsub } }, { new: true }); // new Devuelve la respuesta actualizada
-
-        }
-    }*/
 
     res.json(
         subcategoria

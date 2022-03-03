@@ -1,5 +1,6 @@
 const { Schema, model } = require('mongoose');
 
+
 const SubcategoriaSchema = Schema({
     nombre: {
         type: String,
@@ -20,6 +21,7 @@ const SubcategoriaSchema = Schema({
         default: true
     },
 });
+
 
 const CategoriaSchema = Schema({
     nombre: {
@@ -46,8 +48,10 @@ const CategoriaSchema = Schema({
     },
 });
 
+
 const Subcategoria = model('Subcategoria', SubcategoriaSchema);
 const Categoria = model('Categoria', CategoriaSchema);
+
 
 module.exports = {
     Subcategoria,

@@ -92,7 +92,6 @@ module.exports = {
     emailExiste,
     categoriaExiste,
     subcategoriaExiste,
-    productoExiste,
     existeUsuarioPorId,
     existeCategoriaPorId,
     existeSubCategoriaPorId,

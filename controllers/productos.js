@@ -6,7 +6,6 @@ const Producto = require("../models/producto");
 const Pedido = require("../models/pedido");
 
 
-// obtenerProductos - paginado - total - populate
 const obtenerProductos = async (req = request, res = response) => {
 
     const { desde = 0, limite = 50, visibles = `{ "estado": "true" }`, ordenar = "-rating" } = req.query;
@@ -35,7 +34,6 @@ const obtenerProductos = async (req = request, res = response) => {
     });
 }
 
-// obtenerProducto - populate {}
 const obtenerProducto = async (req = request, res = response) => {
 
     const { id } = req.params;
@@ -131,46 +129,6 @@ const crearProducto = async (req, res = response) => {
 
 };
 
-/*
-const crearProducto = async (req, res = response) => {
-
-    const { nombre, descripcion, precio, stock, img, categoria, subcategoria } = req.body;
-
-    const productoDB = await Producto.findOne({ nombre: nombre });
-
-    if (productoDB) {
-        return res.status(400).json({
-            msg: `El producto ${productoDB.nombre}, ya existe`
-        });
-    }
-
-    const categoriaBuscar = await Categoria.findOne({ "nombre": categoria })
-        .populate("subcategorias")
-        .exec(async function (err, cat) {
-            if (err) console.log(err);
-            const existeSubCategoria = await cat.subcategorias.find(element => element.nombre === subcategoria);
-            if (!existeSubCategoria) {
-                return res.status(400).json({
-                    msg: `La subcategoría ${subcategoria}, no existe`
-                });
-            }
-
-            const producto = new Producto({ nombre: nombre, descripcion, precio, stock, img, categoria: cat._id, subcategoria: existeSubCategoria._id });
-
-            const agrega = await Subcategoria.findByIdAndUpdate(existeSubCategoria._id, { $push: { "productos": producto._id } }, // Agrega el id del producto en la subcategoria
-                {
-                    new: true
-                });
-
-            // Guardar en la base de datos
-            await producto.save();
-
-            res.status(201).json(producto);
-        });
-
-}*/
-
-// actualizarProducto nombre
 const actualizarProducto = async (req = request, res = response) => {
 
     const { id } = req.params;

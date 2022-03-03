@@ -20,24 +20,21 @@ const {
 
 const router = Router();
 
-// Obtener todas las categorias - publico
+
 router.get('/', obtenerCategorias);
 
-// Obtener una categoria por id - publico
 router.get('/:id', [
     //check('id', 'El id no es valido').isMongoId(),
     //check('id').custom(existeCategoriaPorId),
     validarCampos
 ], obtenerCategoria);
 
-// Obtener una categoria por id - publico
 router.get('/subcategoria/:id', [
     //check('id', 'El id no es valido').isMongoId(),
     //check('id').custom(existeCategoriaPorId),
     validarCampos
 ], obtenerSubCategoria);
 
-// Crear categoria - privado - cualquier persona con un token válido
 router.post('/', [
     validarJWT,
     checkAdmin,
@@ -52,7 +49,6 @@ router.post('/subcategoria', [
     validarCampos
 ], crearSubCategoria);
 
-// Actualizar - privado - cualquier persona con un token válido
 router.put('/:id', [
     validarJWT,
     checkAdmin,
@@ -69,7 +65,6 @@ router.put('/subcategoria/:id', [
     validarCampos
 ], actualizarSubCategoria);
 
-// Borrar una categoria - Admin
 router.delete('/:id', [
     validarJWT,
     checkAdmin,
@@ -85,5 +80,6 @@ router.delete('/subcategoria/:id', [
     check('id').custom(existeSubCategoriaPorId),
     validarCampos
 ], borrarSubCategoria);
+
 
 module.exports = router;
