@@ -19,7 +19,8 @@ class Server {
             pedidos: '/pedidos',
             productos: '/productos',
             usuarios: '/usuarios',
-            uploads: '/uploads'
+            uploads: '/uploads',
+            home: '/'
         }
 
         // Conectar a la base de datos
@@ -64,6 +65,7 @@ class Server {
         this.app.use(this.paths.productos, require('../routes/productos'));
         this.app.use(this.paths.usuarios, require('../routes/usuarios'));
         this.app.use(this.paths.uploads, require('../routes/uploads'));
+        this.app.use(this.paths.home, require('../routes/home'));
     }
 
     listen() {
