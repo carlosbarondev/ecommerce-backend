@@ -1,6 +1,6 @@
 # Ecommerce Backend
 
-Backend de un e-commerce genérico, construido con Node, Express y MongoDB.
+API REST de un e-commerce genérico, construido con Node, Express y MongoDB.
 
 [VISTA PREVIA](https://ecommerce-carlosbarondev.herokuapp.com/)
 
