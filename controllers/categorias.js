@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { response } = require("express");
 const { Categoria, Subcategoria } = require('../models/categoria');
+const { Types: { ObjectId } } = mongoose;
 
 
 const obtenerCategorias = async (req = request, res = response) => {
@@ -56,10 +57,13 @@ const obtenerSubCategoria = async (req = request, res = response) => {
 
     let query;
 
-    if (mongoose.isValidObjectId(id)) { // El id puede ser un id de Mongo o el nombre de la categoria
-        query = { "_id": id, "estado": true }
-    } else {
+    // El id puede ser un nombre de subcategoría o un id de Mongo
+    const validateObjectId = (id) => ObjectId.isValid(id) && (new ObjectId(id)).toString() === id;
+
+    if (validateObjectId) {
         query = { "nombre": id, "estado": true }
+    } else {
+        query = { "_id": id, "estado": true }
     }
 
     const subcategoria = await Subcategoria.findOne(query)

@@ -73,36 +73,22 @@ const obtenerProducto = async (req = request, res = response) => {
 
 const obtenerMejoresProductosCategoria = async (req = request, res = response) => {
 
-    const { desde = 0, limite = 50, visibles = `{ "estado": "true" }`, categoria, ordenar = "-vendido" } = req.query;
+    const { desde = 0, limite = 50, visibles = true, categoria, ordenar } = req.query;
 
     try {
 
-        await Promise.all([
-            Producto.find(JSON.parse(visibles))
-                .collation({ locale: "es", strength: 1 })
-                .sort(ordenar)
-                .skip(Number(desde))
-                .limit(Number(limite))
-                .populate([
-                    {
-                        path: 'categoria',
-                        match: { "nombre": categoria, "estado": true }
-                    },
-                    {
-                        path: 'subcategoria',
-                        match: { "estado": true }
-                    }
-                ])
-                .exec(function (error, prod) {
-                    if (error) {
-                        return console.log(error);
-                    }
+        const idProducto = await Categoria.findOne({ nombre: categoria });
 
-                    res.json({
-                        productos: prod.filter(p => p.categoria !== null)
-                    });
-                })
-        ]);
+        const productos = await Producto.find({ categoria: idProducto._id, estado: visibles })
+            .collation({ locale: "es", strength: 1 })
+            .sort(ordenar)
+            .skip(Number(desde))
+            .limit(Number(limite))
+            .populate("categoria subcategoria");
+
+        res.json({
+            productos
+        });
 
     } catch (error) {
         console.log(error);
