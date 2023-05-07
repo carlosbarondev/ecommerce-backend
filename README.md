@@ -2,7 +2,7 @@
 
 API REST de un e-commerce genérico, construido con Node, Express y MongoDB.
 
-[VISTA PREVIA](https://ecommerce-carlosbarondev.herokuapp.com/) *(El servidor arranca en 10 segundos aproximadamente)*
+[VISTA PREVIA](https://ecommerce-carlosbarondev.up.railway.app/) *(El servidor arranca en 10 segundos aproximadamente)*
 
 [Frontend](https://github.com/carlosbarondev/ecommerce-frontend)
 
@@ -45,5 +45,5 @@ API REST de un e-commerce genérico, construido con Node, Express y MongoDB.
 
 ## Links
 
-* [Website](https://ecommerce-carlosbarondev.herokuapp.com/) *(El servidor arranca en 10 segundos aproximadamente)*
+* [Website](https://ecommerce-carlosbarondev.up.railway.app/) *(El servidor arranca en 10 segundos aproximadamente)*
 * [Frontend](https://github.com/carlosbarondev/ecommerce-frontend)
